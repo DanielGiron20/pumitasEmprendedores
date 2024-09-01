@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "129010748295",
+    "project_id": "pumitasemprendedores",
+    "storage_bucket": "pumitasemprendedores.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129010748295:android:a56d512b0369df6eb2e122",
+        "android_client_info": {
+          "package_name": "com.unah.daniel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKg0XuIfPlOAoTgFnOPugfox-26GP7Nko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
