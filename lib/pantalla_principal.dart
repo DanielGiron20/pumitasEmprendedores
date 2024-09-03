@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pumitas_emprendedores/rutas.dart';
 
 class PantallaPrincipal extends StatelessWidget {
   const PantallaPrincipal({super.key});
@@ -10,6 +11,14 @@ class PantallaPrincipal extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Pumitas emprendedores'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.login),
+              onPressed: () {
+                Navigator.pushNamed(context, MyRoutes.Login.name);
+              },
+            ),
+          ],
         ),
         body: Container(
           padding: EdgeInsets.symmetric(horizontal: 16),
