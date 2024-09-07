@@ -60,14 +60,14 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         CustomInputs(
                           show: false,
-                          nombrelabel: 'Correo',
-                          hint: 'Ingrese su correo',
+                          nombrelabel: 'Usuario',
+                          hint: 'Ingrese su nombre de vendedor',
                           teclado: TextInputType.emailAddress,
                           controller: correocontroller,
                           icono: Icons.check,
                           validator: (valor) {
                             if (valor == null || valor.isEmpty) {
-                              return 'El correo es obligatorio';
+                              return 'El nombre es obligatorio';
                             }
                           },
                         ),
