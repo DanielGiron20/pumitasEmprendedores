@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
+import 'package:pumitas_emprendedores/rutas.dart';
+import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class RegistroPage extends StatefulWidget {
   const RegistroPage({super.key});
@@ -19,8 +23,9 @@ class _RegistroPageState extends State<RegistroPage> {
   final _descripcionController = TextEditingController();
   final _whatsappController = TextEditingController();
   final _instagramController = TextEditingController();
-  final _contrasenaController = TextEditingController(); 
+  final _contrasenaController = TextEditingController();
   final _picker = ImagePicker();
+  final _sedeController = TextEditingController();
   File? _logoFile;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -32,7 +37,7 @@ class _RegistroPageState extends State<RegistroPage> {
     _descripcionController.dispose();
     _whatsappController.dispose();
     _instagramController.dispose();
-    _contrasenaController.dispose(); 
+    _contrasenaController.dispose();
     super.dispose();
   }
 
@@ -45,9 +50,28 @@ class _RegistroPageState extends State<RegistroPage> {
     }
   }
 
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 100,
+            width: 100,
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> registerSeller() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
+        showLoadingDialog(context);
         String logoUrl = '';
         if (_logoFile != null) {
           final storageRef = FirebaseStorage.instance
@@ -57,15 +81,33 @@ class _RegistroPageState extends State<RegistroPage> {
           logoUrl = await uploadTask.ref.getDownloadURL();
         }
 
-        await FirebaseFirestore.instance.collection('sellers').add({
+        DocumentReference sellerRef =
+            await FirebaseFirestore.instance.collection('sellers').add({
           'name': _nombreController.text,
           'email': _correoController.text,
           'description': _descripcionController.text,
           'instagram': _instagramController.text,
           'whatsapp': _whatsappController.text,
-          'password': _contrasenaController.text, 
+          'password': _contrasenaController.text,
           'logo': logoUrl,
+          'sede': _sedeController.text,
         });
+
+        String sellerId = sellerRef.id;
+
+        final UsuarioController usuarioController =
+            Get.put(UsuarioController());
+        await usuarioController.addUsuario(
+          id: sellerId,
+          name: _nombreController.text,
+          email: _correoController.text,
+          description: _descripcionController.text,
+          instagram: _instagramController.text,
+          whatsapp: _whatsappController.text,
+          password: _contrasenaController.text,
+          logo: logoUrl,
+          sede: _sedeController.text,
+        );
 
         Get.snackbar('Éxito', 'Vendedor registrado exitosamente');
 
@@ -73,6 +115,11 @@ class _RegistroPageState extends State<RegistroPage> {
         setState(() {
           _logoFile = null;
         });
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          MyRoutes.PantallaPrincipal.name,
+          (Route<dynamic> route) => false,
+        );
       } catch (e) {
         Get.snackbar('Error', 'Error al registrar el vendedor');
       }
@@ -119,23 +166,15 @@ class _RegistroPageState extends State<RegistroPage> {
                   color: Colors.white,
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18.0, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18.0, vertical: 15),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextFormField(
+                        CustomInputs(
                           controller: _nombreController,
-                          decoration: InputDecoration(
-                            labelText: 'Nombre de vendedor',
-                            hintText: 'Ingrese el nombre de vendedor',
-                            prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                           validator: (valor) {
                             if (valor == null || valor.isEmpty) {
                               return 'El nombre es obligatorio';
@@ -145,19 +184,15 @@ class _RegistroPageState extends State<RegistroPage> {
                             }
                             return null;
                           },
+                          teclado: TextInputType.text,
+                          hint: 'Ingrese el nombre de vendedor',
+                          nombrelabel: 'Nombre de vendedor',
+                          icono: Icons.person,
+                          show: false, // No es campo de contraseña
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
+                        CustomInputs(
                           controller: _correoController,
-                          decoration: InputDecoration(
-                            labelText: 'Correo electrónico',
-                            hintText: 'Ingrese su correo electrónico',
-                            prefixIcon: const Icon(Icons.email),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
                           validator: (valor) {
                             if (valor == null || valor.isEmpty) {
                               return 'El correo es obligatorio';
@@ -167,64 +202,70 @@ class _RegistroPageState extends State<RegistroPage> {
                             }
                             return null;
                           },
+                          teclado: TextInputType.emailAddress,
+                          hint: 'Ingrese su correo electrónico',
+                          nombrelabel: 'Correo electrónico',
+                          icono: Icons.email,
+                          show: false, // No es campo de contraseña
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
+                        CustomInputs(
                           controller: _descripcionController,
-                          decoration: InputDecoration(
-                            labelText: 'Descripción',
-                            hintText: 'Ingrese una descripción del negocio',
-                            prefixIcon: const Icon(Icons.description),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                           validator: (valor) {
                             if (valor == null || valor.isEmpty) {
                               return 'La descripción es obligatoria';
                             }
                             return null;
                           },
+                          teclado: TextInputType.text,
+                          hint: 'Ingrese una descripción del negocio',
+                          nombrelabel: 'Descripción',
+                          icono: Icons.description,
+                          show: false, // No es campo de contraseña
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
+                        CustomInputs(
                           controller: _whatsappController,
-                          decoration: InputDecoration(
-                            labelText: 'WhatsApp',
-                            hintText: 'Ingrese el número de WhatsApp',
-                            prefixIcon: const FaIcon(FontAwesomeIcons.whatsapp),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          keyboardType: TextInputType.phone,
+                          validator: null, // No hay validación específica
+                          teclado: TextInputType.phone,
+                          hint: 'Ingrese el número de WhatsApp',
+                          nombrelabel: 'WhatsApp',
+                          icono: FontAwesomeIcons.whatsapp,
+                          show: false, // No es campo de contraseña
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
+                        CustomInputs(
                           controller: _instagramController,
-                          decoration: InputDecoration(
-                            labelText: 'Instagram',
-                            hintText: 'Ingrese el enlace de Instagram',
-                            prefixIcon: const FaIcon(FontAwesomeIcons.instagram),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          keyboardType: TextInputType.url,
+                          validator: null, // No hay validación específica
+                          teclado: TextInputType.url,
+                          hint: 'Ingrese el enlace de Instagram',
+                          nombrelabel: 'Instagram',
+                          icono: FontAwesomeIcons.instagram,
+                          show: false, // No es campo de contraseña
                         ),
                         const SizedBox(height: 20),
-                        // Campo de contraseña
-                        TextFormField(
+                        CustomInputs(
+                          controller: _sedeController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Seleccione una opción';
+                            }
+                            return null;
+                          },
+                          teclado: TextInputType.text,
+                          hint: 'Elegir Centro',
+                          nombrelabel: 'Sede',
+                          icono: Icons.location_city,
+                          show: false,
+                          items: [
+                            'Valle de Sula',
+                            'Ciudad Universitaria',
+                            'CURLA'
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        PasswordInput(
                           controller: _contrasenaController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            hintText: 'Ingrese su contraseña',
-                            prefixIcon: const Icon(Icons.lock),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                           validator: (valor) {
                             if (valor == null || valor.isEmpty) {
                               return 'La contraseña es obligatoria';
@@ -234,6 +275,8 @@ class _RegistroPageState extends State<RegistroPage> {
                             }
                             return null;
                           },
+                          nombrelabel: 'Contraseña',
+                          hint: 'Ingrese su contraseña',
                         ),
                         const SizedBox(height: 20),
                         GestureDetector(
@@ -243,7 +286,8 @@ class _RegistroPageState extends State<RegistroPage> {
                             height: 200,
                             color: Colors.grey[300],
                             child: _logoFile == null
-                                ? const Center(child: Text('Selecciona una imagen'))
+                                ? const Center(
+                                    child: Text('Selecciona una imagen'))
                                 : Image.file(_logoFile!),
                           ),
                         ),

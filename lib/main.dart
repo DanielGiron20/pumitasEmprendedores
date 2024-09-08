@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:get/get.dart';  // Asegúrate de tener el paquete get en pubspec.yaml
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Asegúrate de que Flutter esté inicializado
-  await Firebase.initializeApp(); // Inicializa Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await DBHelper.initDB();
   runApp(const MyApp());
 }
 

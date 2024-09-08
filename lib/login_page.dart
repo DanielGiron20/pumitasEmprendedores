@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
@@ -14,6 +18,68 @@ class _LoginPageState extends State<LoginPage> {
   final correocontroller = TextEditingController();
   final contracontroller = TextEditingController();
   final GlobalKey<FormState> fkey = GlobalKey<FormState>();
+
+  Future<void> _login() async {
+    if (fkey.currentState?.validate() ?? false) {
+      try {
+        final QuerySnapshot userQuery = await FirebaseFirestore.instance
+            .collection('sellers')
+            .where('email', isEqualTo: correocontroller.text)
+            .limit(1)
+            .get();
+
+        if (userQuery.docs.isEmpty) {
+          Get.snackbar('Error', 'Usuario no encontrado');
+        } else {
+          final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+          if (userData['password'] == contracontroller.text) {
+            Get.snackbar('Éxito', 'Inicio de sesión exitoso');
+
+            String userId = userQuery.docs.first.id;
+
+            final UsuarioController usuarioController =
+                Get.put(UsuarioController());
+
+            Usuario usuario = Usuario(
+              id: userId,
+              name: userData['name'],
+              email: userData['email'],
+              description: userData['description'],
+              instagram: userData['instagram'],
+              whatsapp: userData['whatsapp'],
+              password: userData['password'],
+              logo: userData['logo'],
+              sede: userData['sede'],
+            );
+
+            await usuarioController.addUsuario(
+              id: usuario.id,
+              name: usuario.name,
+              email: usuario.email,
+              description: usuario.description,
+              instagram: usuario.instagram,
+              whatsapp: usuario.whatsapp,
+              password: usuario.password,
+              logo: usuario.logo,
+              sede: usuario.sede,
+            );
+
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              MyRoutes.PantallaPrincipal.name,
+              (Route<dynamic> route) => false,
+            );
+          } else {
+            Get.snackbar('Error', 'Contraseña incorrecta');
+          }
+        }
+      } catch (e) {
+        Get.snackbar('Error', 'Error al iniciar sesión');
+      }
+    } else {
+      Get.snackbar('Error', 'Por favor complete los campos correctamente');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +148,6 @@ class _LoginPageState extends State<LoginPage> {
                             if (valor == null || valor.isEmpty) {
                               return 'La contraseña es obligatoria';
                             }
-
                             return null;
                           },
                         ),
@@ -100,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Color.fromARGB(255, 0, 1, 42),
                               ])),
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: _login,
                             child: const Text(
                               'Ingresar',
                               style: TextStyle(
