@@ -27,6 +27,7 @@ class _RegistroPageState extends State<RegistroPage> {
   final _picker = ImagePicker();
   final _sedeController = TextEditingController();
   File? _logoFile;
+  BuildContext? _dialogContext;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -50,11 +51,12 @@ class _RegistroPageState extends State<RegistroPage> {
     }
   }
 
-  void showLoadingDialog(BuildContext context) {
-    showDialog(
+  Future<void> showLoadingDialog(BuildContext context) {
+    return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        _dialogContext = context;
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
@@ -70,8 +72,9 @@ class _RegistroPageState extends State<RegistroPage> {
 
   Future<void> registerSeller() async {
     if (_formKey.currentState?.validate() ?? false) {
+      showLoadingDialog(context);
+
       try {
-        showLoadingDialog(context);
         String logoUrl = '';
         if (_logoFile != null) {
           final storageRef = FirebaseStorage.instance
@@ -80,7 +83,6 @@ class _RegistroPageState extends State<RegistroPage> {
           final uploadTask = await storageRef.putFile(_logoFile!);
           logoUrl = await uploadTask.ref.getDownloadURL();
         }
-
         DocumentReference sellerRef =
             await FirebaseFirestore.instance.collection('sellers').add({
           'name': _nombreController.text,
@@ -92,9 +94,7 @@ class _RegistroPageState extends State<RegistroPage> {
           'logo': logoUrl,
           'sede': _sedeController.text,
         });
-
         String sellerId = sellerRef.id;
-
         final UsuarioController usuarioController =
             Get.put(UsuarioController());
         await usuarioController.addUsuario(
@@ -115,16 +115,20 @@ class _RegistroPageState extends State<RegistroPage> {
         setState(() {
           _logoFile = null;
         });
+
+        Navigator.of(context).pop();
         Navigator.pushNamedAndRemoveUntil(
           context,
           MyRoutes.PantallaPrincipal.name,
           (Route<dynamic> route) => false,
         );
       } catch (e) {
+        Navigator.of(context).pop();
         Get.snackbar('Error', 'Error al registrar el vendedor');
+        print("Error: $e");
       }
     } else {
-      print("Formulario no válido");
+      Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
   }
 
@@ -206,7 +210,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           hint: 'Ingrese su correo electrónico',
                           nombrelabel: 'Correo electrónico',
                           icono: Icons.email,
-                          show: false, // No es campo de contraseña
+                          show: false,
                         ),
                         const SizedBox(height: 20),
                         CustomInputs(
@@ -221,17 +225,17 @@ class _RegistroPageState extends State<RegistroPage> {
                           hint: 'Ingrese una descripción del negocio',
                           nombrelabel: 'Descripción',
                           icono: Icons.description,
-                          show: false, // No es campo de contraseña
+                          show: false,
                         ),
                         const SizedBox(height: 20),
                         CustomInputs(
                           controller: _whatsappController,
-                          validator: null, // No hay validación específica
+                          validator: null,
                           teclado: TextInputType.phone,
                           hint: 'Ingrese el número de WhatsApp',
                           nombrelabel: 'WhatsApp',
                           icono: FontAwesomeIcons.whatsapp,
-                          show: false, // No es campo de contraseña
+                          show: false,
                         ),
                         const SizedBox(height: 20),
                         CustomInputs(
@@ -241,7 +245,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           hint: 'Ingrese el enlace de Instagram',
                           nombrelabel: 'Instagram',
                           icono: FontAwesomeIcons.instagram,
-                          show: false, // No es campo de contraseña
+                          show: false,
                         ),
                         const SizedBox(height: 20),
                         CustomInputs(

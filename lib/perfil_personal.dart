@@ -103,6 +103,19 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                     'Sede: ${_currentUser!.sede}',
                     style: const TextStyle(fontSize: 18),
                   ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          MyRoutes.AgregarProducto.name,
+                          arguments: {'currentUser': _currentUser},
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('Agregar producto'), Icon(Icons.add)],
+                      )),
                   const SizedBox(height: 20),
                   ElevatedButton(
                       onPressed: _logout,

@@ -19,9 +19,33 @@ class _LoginPageState extends State<LoginPage> {
   final contracontroller = TextEditingController();
   final GlobalKey<FormState> fkey = GlobalKey<FormState>();
 
+  BuildContext? _dialogContext;
+
+  Future<void> showLoadingDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _dialogContext = context;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 100,
+            width: 100,
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _login() async {
     if (fkey.currentState?.validate() ?? false) {
+      showLoadingDialog(context);
+
       try {
+        // Consulta el usuario en Firestore
         final QuerySnapshot userQuery = await FirebaseFirestore.instance
             .collection('sellers')
             .where('email', isEqualTo: correocontroller.text)
@@ -32,16 +56,14 @@ class _LoginPageState extends State<LoginPage> {
           Get.snackbar('Error', 'Usuario no encontrado');
         } else {
           final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+
+          // Verifica la contraseña
           if (userData['password'] == contracontroller.text) {
             Get.snackbar('Éxito', 'Inicio de sesión exitoso');
 
-            String userId = userQuery.docs.first.id;
-
-            final UsuarioController usuarioController =
-                Get.put(UsuarioController());
-
+            // Crea el objeto Usuario
             Usuario usuario = Usuario(
-              id: userId,
+              id: userQuery.docs.first.id,
               name: userData['name'],
               email: userData['email'],
               description: userData['description'],
@@ -51,6 +73,10 @@ class _LoginPageState extends State<LoginPage> {
               logo: userData['logo'],
               sede: userData['sede'],
             );
+
+            // Obtén el controlador de usuario y guarda el usuario en la base de datos local
+            final UsuarioController usuarioController =
+                Get.put(UsuarioController());
 
             await usuarioController.addUsuario(
               id: usuario.id,
@@ -63,20 +89,24 @@ class _LoginPageState extends State<LoginPage> {
               logo: usuario.logo,
               sede: usuario.sede,
             );
-
+            Navigator.of(context).pop();
             Navigator.pushNamedAndRemoveUntil(
               context,
               MyRoutes.PantallaPrincipal.name,
               (Route<dynamic> route) => false,
             );
           } else {
+            Navigator.of(context).pop();
             Get.snackbar('Error', 'Contraseña incorrecta');
           }
         }
       } catch (e) {
+        Navigator.of(context).pop();
         Get.snackbar('Error', 'Error al iniciar sesión');
+        print("Error: $e");
       }
     } else {
+      Navigator.of(context).pop();
       Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
   }
