@@ -1,9 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
+import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class AgregarProducto extends StatefulWidget {
@@ -22,6 +26,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
   final _precioController = TextEditingController();
   final _picker = ImagePicker();
   File? _imagenFile;
+  BuildContext? _dialogContext;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -45,6 +50,70 @@ class _AgregarProductoState extends State<AgregarProducto> {
       setState(() {
         _imagenFile = File(pickedFile.path);
       });
+    }
+  }
+
+  Future<void> showLoadingDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _dialogContext = context;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 100,
+            width: 100,
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _registerProduct() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      showLoadingDialog(context);
+
+      try {
+        String imageUrl = '';
+        if (_imagenFile != null) {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('products/${DateTime.now().millisecondsSinceEpoch}.png');
+          final uploadTask = await storageRef.putFile(_imagenFile!);
+          imageUrl = await uploadTask.ref.getDownloadURL();
+        }
+        await FirebaseFirestore.instance.collection('products').add({
+          'name': _nombreController.text,
+          'category': _categoriaController.text,
+          'description': _descripcionController.text,
+          'price': double.parse(_precioController.text),
+          'image': imageUrl,
+          'sellerId': _currentUser?.id,
+        });
+
+        Get.snackbar('Éxito', 'Producto registrado exitosamente');
+
+        _formKey.currentState?.reset();
+        setState(() {
+          _imagenFile = null;
+        });
+
+        Navigator.of(context).pop();
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          MyRoutes.PantallaPrincipal.name,
+          (Route<dynamic> route) => false,
+        );
+      } catch (e) {
+        Navigator.of(context).pop();
+        Get.snackbar('Error', 'Error al registrar el producto');
+        print("Error: $e");
+      }
+    } else {
+      Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
   }
 
@@ -195,7 +264,9 @@ class _AgregarProductoState extends State<AgregarProducto> {
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
-                            if (_formKey.currentState?.validate() ?? false) {}
+                            if (_formKey.currentState?.validate() ?? false) {
+                              _registerProduct();
+                            }
                           },
                           child: const Text('Agregar Producto'),
                         ),
