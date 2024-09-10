@@ -4,6 +4,8 @@ import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
+import 'package:pumitas_emprendedores/producto.dart';
+
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -45,6 +47,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           'image': doc['image'],
           'price': doc['price'],
           'category': doc['category'],
+          'sellerId': doc['sellerId'],
+          'sellerName': doc['sellerName'],
         };
       }).toList();
     });
@@ -106,11 +110,28 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       itemBuilder: (context, index) {
         final product = _products[index];
         return ProductCard(
-          nombre: product['name'],
-          descripcion: product['description'],
-          imagenUrl: product['image'],
-          precio: product['price'],
-          onTap: () {},
+          name: product['name'],
+          description: product['description'],
+          image: product['image'],
+          price: product['price'],
+          sellerId: product['sellerId'],
+          sellerName: product['sellerName'],
+          onTap: () {
+          Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => ProductoPage(
+      name: product['name'],
+      description: product['description'],
+      image: product['image'],
+      price: product['price'],
+      category: product['category'],
+      sellerName: product['sellerName'],
+    ),
+  ),
+);
+
+          },
         );
       },
     );

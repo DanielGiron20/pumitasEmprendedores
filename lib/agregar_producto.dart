@@ -92,6 +92,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           'price': double.parse(_precioController.text),
           'image': imageUrl,
           'sellerId': _currentUser?.id,
+          "sellerName": _currentUser?.name,
         });
 
         Get.snackbar('Éxito', 'Producto registrado exitosamente');

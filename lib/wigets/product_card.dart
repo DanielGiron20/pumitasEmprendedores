@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 class ProductCard extends StatelessWidget {
-  final String nombre;
-  final String descripcion;
-  final String imagenUrl;
-  final double precio;
+  final String name;
+  final String description;
+  final String image;
+  final double price;
+  final String sellerId;
+  final String sellerName;
   final VoidCallback onTap;
 
   const ProductCard({
-    required this.nombre,
-    required this.descripcion,
-    required this.imagenUrl,
-    required this.precio,
+    required this.name,
+    required this.description,
+    required this.image,
+    required this.price,
+    required this.sellerId,
+    required this.sellerName, 
     required this.onTap,
     Key? key,
   }) : super(key: key);
@@ -34,7 +38,7 @@ class ProductCard extends StatelessWidget {
                 topRight: Radius.circular(15),
               ),
               child: Image.network(
-                imagenUrl,
+                image,
                 height: 100,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -54,7 +58,7 @@ class ProductCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                nombre,
+                name,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -68,7 +72,7 @@ class ProductCard extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    '\$$precio',
+                    '\$$price',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

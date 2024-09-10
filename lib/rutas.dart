@@ -4,6 +4,8 @@ import 'package:pumitas_emprendedores/login_page.dart';
 import 'package:pumitas_emprendedores/pantalla_principal.dart';
 import 'package:pumitas_emprendedores/perfil_personal.dart';
 import 'package:pumitas_emprendedores/registro_page.dart';
+import 'package:pumitas_emprendedores/producto.dart';
+
 
 enum MyRoutes {
   PantallaPrincipal,
@@ -11,6 +13,7 @@ enum MyRoutes {
   Registro,
   PerfilPersonal,
   AgregarProducto,
+  producto,
 }
 
 final Map<String, Widget Function(BuildContext)> routes = {
