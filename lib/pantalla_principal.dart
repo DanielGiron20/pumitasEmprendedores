@@ -2,10 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
+import 'package:pumitas_emprendedores/producto.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
-import 'package:pumitas_emprendedores/producto.dart';
-
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -17,7 +16,8 @@ class PantallaPrincipal extends StatefulWidget {
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Usuario? _currentUser;
   List<Map<String, dynamic>> _products = [];
-
+  List<Map<String, dynamic>> _allProducts = [];
+  final TextEditingController controller = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -51,6 +51,28 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           'sellerName': doc['sellerName'],
         };
       }).toList();
+      _allProducts = List.from(_products);
+      _products.shuffle();
+      _allProducts.shuffle();
+    });
+  }
+
+  void _searchProducts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _products = List.from(_allProducts);
+      } else {
+        final searchLower = query.toLowerCase();
+        _products = _allProducts.where((product) {
+          final nameLower = product['name'].toLowerCase();
+          final categoryLower = product['category'].toLowerCase();
+          final descriptionLower = product['description'].toLowerCase();
+
+          return nameLower.contains(searchLower) ||
+              categoryLower.contains(searchLower) ||
+              descriptionLower.contains(searchLower);
+        }).toList();
+      }
     });
   }
 
@@ -90,7 +112,29 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                 ),
         ],
       ),
-      body: _buildProductList(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: 'Buscar producto...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              onChanged: (value) {
+                _searchProducts(value);
+              },
+            ),
+          ),
+          Expanded(
+            child: _buildProductList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -117,20 +161,19 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           sellerId: product['sellerId'],
           sellerName: product['sellerName'],
           onTap: () {
-          Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => ProductoPage(
-      name: product['name'],
-      description: product['description'],
-      image: product['image'],
-      price: product['price'],
-      category: product['category'],
-      sellerName: product['sellerName'],
-    ),
-  ),
-);
-
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductoPage(
+                  name: product['name'],
+                  description: product['description'],
+                  image: product['image'],
+                  price: product['price'],
+                  category: product['category'],
+                  sellerName: product['sellerName'],
+                ),
+              ),
+            );
           },
         );
       },

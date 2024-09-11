@@ -38,20 +38,20 @@ class _ProductoPageState extends State<ProductoPage> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      // Buscar el documento del vendedor usando el sellerName
       QuerySnapshot sellerQuery = await firestore
           .collection('sellers')
           .where('name', isEqualTo: widget.sellerName)
           .get();
 
       if (sellerQuery.docs.isNotEmpty) {
-        // Asumimos que solo hay un documento para cada sellerName
-        Map<String, dynamic> sellerData = sellerQuery.docs.first.data() as Map<String, dynamic>;
+        Map<String, dynamic> sellerData =
+            sellerQuery.docs.first.data() as Map<String, dynamic>;
         setState(() {
           _sellerData = sellerData;
         });
       } else {
-        print('No se encontraron vendedores con el nombre ${widget.sellerName}');
+        print(
+            'No se encontraron vendedores con el nombre ${widget.sellerName}');
       }
     } catch (e) {
       print('Error al cargar los datos del vendedor: $e');
@@ -60,7 +60,7 @@ class _ProductoPageState extends State<ProductoPage> {
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
-   launchUrl(uri, mode: LaunchMode.externalApplication);
+    launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -69,55 +69,81 @@ class _ProductoPageState extends State<ProductoPage> {
       appBar: AppBar(
         title: Text(widget.name),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _sellerData == null
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Información del vendedor
-                  if (_sellerData != null) ...[
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(_sellerData!['logo']),
-                      radius: 30,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _sellerData!['name'],
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const FaIcon(FontAwesomeIcons.whatsapp),
-                          onPressed: () {
-                            final whatsappUrl = 'https://wa.me/${_sellerData!['whatsapp']}';
-                            _launchUrl(whatsappUrl);
-                          },
+      body: _sellerData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // Imagen del producto
+                Expanded(
+                  child: Image.network(
+                    widget.image,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Precio del producto
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    '\$${widget.price.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
                         ),
-                        IconButton(
-                          icon: const FaIcon(FontAwesomeIcons.instagram),
-                          onPressed: () {
-                            final instagramUrl = 'https://www.instagram.com/${_sellerData!['instagram']}';
-                            _launchUrl(instagramUrl);
-                          },
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Descripción del producto
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    widget.description,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
+                const Spacer(),
+                // Información del vendedor con botones de redes sociales
+                if (_sellerData != null)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          _sellerData!['name'],
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                                  color: Colors.green),
+                              onPressed: () {
+                                final whatsappUrl =
+                                    'https://wa.me/${_sellerData!['whatsapp']}';
+                                _launchUrl(whatsappUrl);
+                              },
+                            ),
+                            const SizedBox(width: 20),
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.instagram,
+                                  color: Colors.purple),
+                              onPressed: () {
+                                final instagramUrl =
+                                    'https://www.instagram.com/${_sellerData!['instagram']}';
+                                _launchUrl(instagramUrl);
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                  const SizedBox(height: 20),
-                  // Información del producto
-                  Image.network(widget.image),
-                  Text('Precio: \$${widget.price.toStringAsFixed(2)}'),
-                  const SizedBox(height: 10),
-                  Text('Categoría: ${widget.category}'),
-                  const SizedBox(height: 10),
-                  Text('Descripción: ${widget.description}'),
-                ],
-              ),
-      ),
+                  ),
+              ],
+            ),
     );
   }
 }

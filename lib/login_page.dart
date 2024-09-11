@@ -45,17 +45,22 @@ class _LoginPageState extends State<LoginPage> {
       showLoadingDialog(context);
 
       try {
-        // Consulta el usuario en Firestore
         final QuerySnapshot userQuery = await FirebaseFirestore.instance
             .collection('sellers')
             .where('email', isEqualTo: correocontroller.text)
             .limit(1)
             .get();
+        final QuerySnapshot nameQuery = await FirebaseFirestore.instance
+            .collection('sellers')
+            .where('name', isEqualTo: correocontroller.text)
+            .get();
+        final combinedResults = userQuery.docs + nameQuery.docs;
 
-        if (userQuery.docs.isEmpty) {
+        if (combinedResults.isEmpty) {
+          Navigator.of(context).pop();
           Get.snackbar('Error', 'Usuario no encontrado');
         } else {
-          final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+          final userData = combinedResults.first.data() as Map<String, dynamic>;
 
           // Verifica la contraseña
           if (userData['password'] == contracontroller.text) {
@@ -73,6 +78,8 @@ class _LoginPageState extends State<LoginPage> {
               logo: userData['logo'],
               sede: userData['sede'],
             );
+            print(userData['name']);
+            print(userQuery.docs.first.id);
 
             // Obtén el controlador de usuario y guarda el usuario en la base de datos local
             final UsuarioController usuarioController =
@@ -156,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         CustomInputs(
                           show: false,
-                          nombrelabel: 'Usuario',
+                          nombrelabel: 'Usuario o correo',
                           hint: 'Ingrese su nombre de vendedor',
                           teclado: TextInputType.emailAddress,
                           controller: correocontroller,

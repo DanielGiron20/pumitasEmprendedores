@@ -73,59 +73,68 @@ class _RegistroPageState extends State<RegistroPage> {
   Future<void> registerSeller() async {
     if (_formKey.currentState?.validate() ?? false) {
       showLoadingDialog(context);
+      final QuerySnapshot nameQuery = await FirebaseFirestore.instance
+          .collection('sellers')
+          .where('name', isEqualTo: _nombreController.text)
+          .get();
 
-      try {
-        String logoUrl = '';
-        if (_logoFile != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('logos/${DateTime.now().millisecondsSinceEpoch}.png');
-          final uploadTask = await storageRef.putFile(_logoFile!);
-          logoUrl = await uploadTask.ref.getDownloadURL();
+      if (nameQuery.docs.isNotEmpty) {
+        Navigator.of(context).pop();
+        Get.snackbar('Error', 'Ese Nombre de usuario ya existe');
+      } else {
+        try {
+          String logoUrl = '';
+          if (_logoFile != null) {
+            final storageRef = FirebaseStorage.instance
+                .ref()
+                .child('logos/${DateTime.now().millisecondsSinceEpoch}.png');
+            final uploadTask = await storageRef.putFile(_logoFile!);
+            logoUrl = await uploadTask.ref.getDownloadURL();
+          }
+          DocumentReference sellerRef =
+              await FirebaseFirestore.instance.collection('sellers').add({
+            'name': _nombreController.text,
+            'email': _correoController.text,
+            'description': _descripcionController.text,
+            'instagram': _instagramController.text,
+            'whatsapp': _whatsappController.text,
+            'password': _contrasenaController.text,
+            'logo': logoUrl,
+            'sede': _sedeController.text,
+          });
+          String sellerId = sellerRef.id;
+          final UsuarioController usuarioController =
+              Get.put(UsuarioController());
+          await usuarioController.addUsuario(
+            id: sellerId,
+            name: _nombreController.text,
+            email: _correoController.text,
+            description: _descripcionController.text,
+            instagram: _instagramController.text,
+            whatsapp: _whatsappController.text,
+            password: _contrasenaController.text,
+            logo: logoUrl,
+            sede: _sedeController.text,
+          );
+
+          Get.snackbar('Éxito', 'Vendedor registrado exitosamente');
+
+          _formKey.currentState?.reset();
+          setState(() {
+            _logoFile = null;
+          });
+
+          Navigator.of(context).pop();
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            MyRoutes.PantallaPrincipal.name,
+            (Route<dynamic> route) => false,
+          );
+        } catch (e) {
+          Navigator.of(context).pop();
+          Get.snackbar('Error', 'Error al registrar el vendedor');
+          print("Error: $e");
         }
-        DocumentReference sellerRef =
-            await FirebaseFirestore.instance.collection('sellers').add({
-          'name': _nombreController.text,
-          'email': _correoController.text,
-          'description': _descripcionController.text,
-          'instagram': _instagramController.text,
-          'whatsapp': _whatsappController.text,
-          'password': _contrasenaController.text,
-          'logo': logoUrl,
-          'sede': _sedeController.text,
-        });
-        String sellerId = sellerRef.id;
-        final UsuarioController usuarioController =
-            Get.put(UsuarioController());
-        await usuarioController.addUsuario(
-          id: sellerId,
-          name: _nombreController.text,
-          email: _correoController.text,
-          description: _descripcionController.text,
-          instagram: _instagramController.text,
-          whatsapp: _whatsappController.text,
-          password: _contrasenaController.text,
-          logo: logoUrl,
-          sede: _sedeController.text,
-        );
-
-        Get.snackbar('Éxito', 'Vendedor registrado exitosamente');
-
-        _formKey.currentState?.reset();
-        setState(() {
-          _logoFile = null;
-        });
-
-        Navigator.of(context).pop();
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          MyRoutes.PantallaPrincipal.name,
-          (Route<dynamic> route) => false,
-        );
-      } catch (e) {
-        Navigator.of(context).pop();
-        Get.snackbar('Error', 'Error al registrar el vendedor');
-        print("Error: $e");
       }
     } else {
       Get.snackbar('Error', 'Por favor complete los campos correctamente');
