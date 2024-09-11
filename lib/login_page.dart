@@ -50,17 +50,12 @@ class _LoginPageState extends State<LoginPage> {
             .where('email', isEqualTo: correocontroller.text)
             .limit(1)
             .get();
-        final QuerySnapshot nameQuery = await FirebaseFirestore.instance
-            .collection('sellers')
-            .where('name', isEqualTo: correocontroller.text)
-            .get();
-        final combinedResults = userQuery.docs + nameQuery.docs;
 
-        if (combinedResults.isEmpty) {
+        if (userQuery.docs.isEmpty) {
           Navigator.of(context).pop();
           Get.snackbar('Error', 'Usuario no encontrado');
         } else {
-          final userData = combinedResults.first.data() as Map<String, dynamic>;
+          final userData = userQuery.docs.first.data() as Map<String, dynamic>;
 
           // Verifica la contraseña
           if (userData['password'] == contracontroller.text) {
@@ -135,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
               child: const Padding(
                 padding: EdgeInsets.only(top: 60.0, left: 22),
                 child: Text(
-                  'Bienvenido \ningresa!',
+                  'Bienvenido \nPumita!',
                   style: TextStyle(
                       fontSize: 30,
                       color: Colors.white,
@@ -163,8 +158,8 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         CustomInputs(
                           show: false,
-                          nombrelabel: 'Usuario o correo',
-                          hint: 'Ingrese su nombre de vendedor',
+                          nombrelabel: 'Correo',
+                          hint: 'Ingrese su correo',
                           teclado: TextInputType.emailAddress,
                           controller: correocontroller,
                           icono: Icons.check,

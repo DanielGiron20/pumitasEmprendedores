@@ -60,51 +60,81 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil Personal'),
+        centerTitle: true,
       ),
       body: _currentUser == null
-          ? Center(child: Text('No hay información de usuario disponible.'))
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(_currentUser!.logo),
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Nombre: ${_currentUser!.name}',
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Email: ${_currentUser!.email}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Descripción: ${_currentUser!.description}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Instagram: ${_currentUser!.instagram}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'WhatsApp: ${_currentUser!.whatsapp}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Sede: ${_currentUser!.sede}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
+          ? Center(
+              child: Text(
+                'No hay información de usuario disponible.',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            )
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(_currentUser!.logo),
+                        radius: 50,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Nombre: ${_currentUser!.name}',
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Email: ${_currentUser!.email}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            const Divider(height: 20),
+                            Text(
+                              'Descripción:',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              _currentUser!.description,
+                              style: const TextStyle(fontSize: 16),
+                              textAlign: TextAlign.justify,
+                            ),
+                            const Divider(height: 20),
+                            Text(
+                              'Instagram: ${_currentUser!.instagram}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'WhatsApp: ${_currentUser!.whatsapp}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Sede: ${_currentUser!.sede}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pushNamed(
                           context,
@@ -112,18 +142,37 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                           arguments: {'currentUser': _currentUser},
                         );
                       },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text('Agregar producto'), Icon(Icons.add)],
-                      )),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Agregar Producto'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        textStyle: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
                       onPressed: _logout,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text('Cerrar Sesión'), Icon(Icons.logout)],
-                      ))
-                ],
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Cerrar Sesión'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        textStyle: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

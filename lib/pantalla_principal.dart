@@ -143,13 +143,22 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       );
     }
 
+    // Tamaño de la pantalla disponible
+    final size = MediaQuery.of(context).size;
+
+    // Calculamos el aspecto de las tarjetas
+    final cardWidth =
+        size.width / 2 - 16; // Ancho de la tarjeta (considerando margen)
+    final cardHeight =
+        cardWidth * 1.5; // Altura basada en la relación de aspecto
+
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2, // Número de columnas
-        crossAxisSpacing: 1, // Espacio horizontal entre tarjetas
-        mainAxisSpacing: 1, // Espacio vertical entre tarjetas
-        childAspectRatio:
-            0.75, // Relación de aspecto de las tarjetas (ancho/alto)
+        crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
+        mainAxisSpacing: 8, // Espacio vertical entre tarjetas
+        childAspectRatio: cardWidth /
+            cardHeight, // Relación de aspecto de las tarjetas (ancho/alto)
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {
