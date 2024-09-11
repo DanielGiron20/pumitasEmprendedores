@@ -103,18 +103,33 @@ class _ProductoPageState extends State<ProductoPage> {
                     textAlign: TextAlign.justify,
                   ),
                 ),
-                const Spacer(),
-                // Información del vendedor con botones de redes sociales
+                const SizedBox(height: 20),
+                Divider(
+                  thickness: 1,
+                  color: Colors.grey[300],
+                ),
+                const SizedBox(height: 10),
                 if (_sellerData != null)
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        Text(
-                          _sellerData!['name'],
-                          style: Theme.of(context).textTheme.titleLarge,
+                        // Foto del vendedor
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(_sellerData!['logo']),
+                          radius: 30,
                         ),
                         const SizedBox(height: 10),
+                        // Nombre del vendedor
+                        Text(
+                          'Para contactar con ' + _sellerData!['name'],
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Botones de redes sociales
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -123,7 +138,7 @@ class _ProductoPageState extends State<ProductoPage> {
                                   color: Colors.green),
                               onPressed: () {
                                 final whatsappUrl =
-                                    'https://wa.me/${_sellerData!['whatsapp']}';
+                                    'https://wa.me/${_sellerData!['whatsapp']}?text=${Uri.encodeComponent('Vi tu producto ${widget.name} en Pumitas Emprendedores y me interesó')}';
                                 _launchUrl(whatsappUrl);
                               },
                             ),
@@ -133,7 +148,7 @@ class _ProductoPageState extends State<ProductoPage> {
                                   color: Colors.purple),
                               onPressed: () {
                                 final instagramUrl =
-                                    'https://www.instagram.com/${_sellerData!['instagram']}';
+                                    'https://www.instagram.com/${_sellerData!['instagram']}/';
                                 _launchUrl(instagramUrl);
                               },
                             ),

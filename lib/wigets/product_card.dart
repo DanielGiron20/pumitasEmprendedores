@@ -15,7 +15,7 @@ class ProductCard extends StatelessWidget {
     required this.image,
     required this.price,
     required this.sellerId,
-    required this.sellerName, 
+    required this.sellerName,
     required this.onTap,
     Key? key,
   }) : super(key: key);
@@ -28,7 +28,7 @@ class ProductCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        elevation: 5,
+        elevation: 10,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -39,7 +39,7 @@ class ProductCard extends StatelessWidget {
               ),
               child: Image.network(
                 image,
-                height: 100,
+                height: 170,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
@@ -60,7 +60,7 @@ class ProductCard extends StatelessWidget {
               child: Text(
                 name,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 1,
@@ -83,7 +83,7 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
           ],
         ),
       ),

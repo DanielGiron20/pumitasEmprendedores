@@ -97,8 +97,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                             radius: 20,
                           ),
                           const SizedBox(width: 10),
-                          Text(_currentUser!.name),
-                          const SizedBox(width: 10),
                         ],
                       ),
                     ),
@@ -146,9 +144,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
 
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount:
-            2, //Aca es si queres que se vea mas de una columna de productos
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // Número de columnas
+        crossAxisSpacing: 1, // Espacio horizontal entre tarjetas
+        mainAxisSpacing: 1, // Espacio vertical entre tarjetas
+        childAspectRatio:
+            0.75, // Relación de aspecto de las tarjetas (ancho/alto)
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {
