@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 
 class RegistroPage extends StatefulWidget {
   const RegistroPage({super.key});
@@ -83,6 +84,14 @@ class _RegistroPageState extends State<RegistroPage> {
         Get.snackbar('Error', 'Ese Nombre de usuario ya existe');
       } else {
         try {
+          /* 
+           para cuando implementemos la autenticación mediante firebase
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: _correoController.text,
+        password: _contrasenaController.text,
+      );*/
+
           String logoUrl = '';
           if (_logoFile != null) {
             final storageRef = FirebaseStorage.instance

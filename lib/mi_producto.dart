@@ -81,9 +81,7 @@ class _MiProductoPageState extends State<MiProductoPage> {
   }
 
   Future<void> _editProduct() async {
-    // Aquí puedes agregar la lógica para editar el producto
-    print('Editar producto: ${widget.name}');
-    // Redirige a la pantalla de edición si tienes una.
+    //xd
   }
 
   Future<void> _deleteProduct() async {

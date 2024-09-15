@@ -6,6 +6,7 @@ import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
+//import 'package:firebase_auth/firebase_auth.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -45,6 +46,17 @@ class _LoginPageState extends State<LoginPage> {
       showLoadingDialog(context);
 
       try {
+        /*
+        para cuando implementemps la autenticación mediante firebase
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: correocontroller.text,
+          password: contracontroller.text,
+        );
+
+        // Si el login fue exitoso, obtenemos el UID del usuario autenticado
+        String userId = userCredential.user?.uid ?? '';
+        */
         final QuerySnapshot userQuery = await FirebaseFirestore.instance
             .collection('sellers')
             .where('email', isEqualTo: correocontroller.text)
