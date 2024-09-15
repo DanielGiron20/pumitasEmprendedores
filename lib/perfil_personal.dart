@@ -171,6 +171,25 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                            context, MyRoutes.MisProductos.name);
+                      },
+                      icon: const Icon(Icons.list),
+                      label: const Text('Ver mis productos'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        textStyle: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
