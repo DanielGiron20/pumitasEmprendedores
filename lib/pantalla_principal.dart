@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
@@ -157,34 +158,41 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         crossAxisCount: 2, // Número de columnas
         crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
         mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-        childAspectRatio: cardWidth /
-            cardHeight, // Relación de aspecto de las tarjetas (ancho/alto)
+        childAspectRatio: cardWidth / cardHeight, // Relación de aspecto
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {
         final product = _products[index];
-        return ProductCard(
-          name: product['name'],
-          description: product['description'],
-          image: product['image'],
-          price: product['price'],
-          sellerId: product['sellerId'],
-          sellerName: product['sellerName'],
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductoPage(
-                  name: product['name'],
-                  description: product['description'],
-                  image: product['image'],
-                  price: product['price'],
-                  category: product['category'],
-                  sellerName: product['sellerName'],
+
+        // Añadimos un efecto de animación usando FadeIn o BounceIn
+        return FadeInUp(
+          // Puedes usar BounceIn, FadeIn, SlideIn, etc.
+          duration: Duration(
+              milliseconds:
+                  300 + index * 200), // Retraso en la animación por tarjeta
+          child: ProductCard(
+            name: product['name'],
+            description: product['description'],
+            image: product['image'],
+            price: product['price'],
+            sellerId: product['sellerId'],
+            sellerName: product['sellerName'],
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductoPage(
+                    name: product['name'],
+                    description: product['description'],
+                    image: product['image'],
+                    price: product['price'],
+                    category: product['category'],
+                    sellerName: product['sellerName'],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );

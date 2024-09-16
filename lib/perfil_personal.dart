@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
@@ -76,9 +77,30 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(_currentUser!.logo),
-                        radius: 50,
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(_currentUser!.logo),
+                            radius: 60,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _currentUser!.name,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            _currentUser!.description,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -90,51 +112,36 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Nombre: ${_currentUser!.name}',
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            _buildInfoRow(
+                              icon: Icons.email,
+                              label: 'Email',
+                              value: _currentUser!.email,
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Email: ${_currentUser!.email}',
-                              style: const TextStyle(fontSize: 18),
+                            _buildInfoRow(
+                              icon: Icons.location_pin,
+                              label: 'Sede',
+                              value: _currentUser!.sede,
                             ),
-                            const Divider(height: 20),
-                            Text(
-                              'Descripción:',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            _buildInfoRow(
+                              icon: FontAwesomeIcons.instagram,
+                              label: 'Instagram',
+                              value: _currentUser!.instagram,
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              _currentUser!.description,
-                              style: const TextStyle(fontSize: 16),
-                              textAlign: TextAlign.justify,
-                            ),
-                            const Divider(height: 20),
-                            Text(
-                              'Instagram: ${_currentUser!.instagram}',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'WhatsApp: ${_currentUser!.whatsapp}',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Sede: ${_currentUser!.sede}',
-                              style: const TextStyle(fontSize: 18),
+                            _buildInfoRow(
+                              icon: FontAwesomeIcons.whatsapp,
+                              label: 'WhatsApp',
+                              value: _currentUser!.whatsapp,
                             ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    ElevatedButton.icon(
+                    _buildActionButton(
+                      label: 'Agregar Producto',
+                      color: Colors.blueAccent,
+                      icon: Icons.add,
                       onPressed: () {
                         Navigator.pushNamed(
                           context,
@@ -142,58 +149,81 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                           arguments: {'currentUser': _currentUser},
                         );
                       },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Agregar Producto'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 20),
-                        textStyle: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
+                    _buildActionButton(
+                      label: 'Cerrar Sesión',
+                      color: Colors.redAccent,
+                      icon: Icons.logout,
                       onPressed: _logout,
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar Sesión'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 20),
-                        textStyle: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
+                    _buildActionButton(
+                      label: 'Ver mis productos',
+                      color: Colors.greenAccent,
+                      icon: Icons.list,
                       onPressed: () {
                         Navigator.pushNamed(
                             context, MyRoutes.MisProductos.name);
                       },
-                      icon: const Icon(Icons.list),
-                      label: const Text('Ver mis productos'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.greenAccent,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 20),
-                        textStyle: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildInfoRow(
+      {required IconData icon, required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blueAccent),
+          const SizedBox(width: 10),
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String label,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          textStyle: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
     );
   }
 }
