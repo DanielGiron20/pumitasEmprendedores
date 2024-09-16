@@ -44,28 +44,57 @@ class ProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Usamos AspectRatio para hacer la imagen cuadrada
               AspectRatio(
                 aspectRatio:
                     1, // Relación de aspecto 1:1 para la imagen cuadrada
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
+                child: Container(
+                  decoration: BoxDecoration(
+                    /*boxShadow: [
+                      // Sombra azul en la mitad superior
+                      BoxShadow(
+                        color: const Color.fromARGB(255, 33, 46, 127)
+                            .withOpacity(
+                                0.4), // Menor opacidad para reducir brillo
+                        spreadRadius: 5,
+                        blurRadius:
+                            5, // Menor blur para un resplandor más suave
+                        offset: const Offset(0, -5 / 3), // Sombra hacia arriba
+                      ),
+                      // Sombra amarilla en la mitad inferior
+                      BoxShadow(
+                        color: const Color.fromARGB(255, 255, 211, 0)
+                            .withOpacity(
+                                0.4), // Menor opacidad para reducir brillo
+                        spreadRadius: 5,
+                        blurRadius:
+                            5, // Menor blur para un resplandor más suave
+                        offset: const Offset(0, 5 / 3), // Sombra hacia abajo
+                      ),
+                    ],*/
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
                   ),
-                  child: Image.network(
-                    image,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.broken_image,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
+                    child: Image.network(
+                      image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.broken_image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),

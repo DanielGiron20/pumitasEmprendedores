@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/mi_producto.dart';
+import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
 
 class MisProductos extends StatefulWidget {
@@ -85,28 +86,35 @@ class _MisProductosState extends State<MisProductos> {
       appBar: AppBar(
         title: const Text('Mis Productos'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Buscar producto...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              onChanged: (value) {
-                _searchProducts(value);
-              },
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
             ),
           ),
-          Expanded(
-            child: _currentUser == null
-                ? const Center(child: CircularProgressIndicator())
-                : _buildProductList(),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar producto...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    _searchProducts(value);
+                  },
+                ),
+              ),
+              Expanded(
+                child: _buildProductList(),
+              ),
+            ],
           ),
         ],
       ),
@@ -144,7 +152,7 @@ class _MisProductosState extends State<MisProductos> {
               description: product['description'],
               image: product['image'],
               price: product['price'],
-             sellerId: product['sellerId'],
+              sellerId: product['sellerId'],
               sellerName: product['sellerName'],
               onTap: () {
                 Navigator.pushReplacement(

@@ -5,6 +5,7 @@ import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/producto.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
+import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
 
 class PantallaPrincipal extends StatefulWidget {
@@ -58,6 +59,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
+  @override
   void _searchProducts(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -77,7 +79,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -111,26 +112,35 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                 ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Buscar producto...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              onChanged: (value) {
-                _searchProducts(value);
-              },
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
             ),
           ),
-          Expanded(
-            child: _buildProductList(),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar producto...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    _searchProducts(value);
+                  },
+                ),
+              ),
+              Expanded(
+                child: _buildProductList(),
+              ),
+            ],
           ),
         ],
       ),
