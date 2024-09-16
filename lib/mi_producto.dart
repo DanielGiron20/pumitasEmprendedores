@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pumitas_emprendedores/Editar_producto.dart';
+import 'package:pumitas_emprendedores/mis_productos.dart';
 
 class MiProductoPage extends StatefulWidget {
   final String name;
@@ -7,6 +9,7 @@ class MiProductoPage extends StatefulWidget {
   final String image;
   final double price;
   final String category;
+  final String sellerId;
 
   const MiProductoPage({
     required this.name,
@@ -14,8 +17,11 @@ class MiProductoPage extends StatefulWidget {
     required this.image,
     required this.price,
     required this.category,
+    required this.sellerId,
     Key? key,
   }) : super(key: key);
+  
+  get productId => null;
 
   @override
   _MiProductoPageState createState() => _MiProductoPageState();
@@ -81,36 +87,82 @@ class _MiProductoPageState extends State<MiProductoPage> {
   }
 
   Future<void> _editProduct() async {
-    //xd
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => EditarProductosPage(
+          name: widget.name,
+          description: widget.description,
+          price: widget.price,
+          category: widget.category,
+          image: widget.image,
+          sellerId: widget.sellerId,
+        ),
+      ),
+    );
   }
 
   Future<void> _deleteProduct() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Eliminar Producto'),
+          content: const Text('¿Estás seguro que deseas eliminar este producto?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), 
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), 
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
 
-    try {
-      QuerySnapshot productQuery = await firestore
-          .collection('products')
-          .where('name', isEqualTo: widget.name)
-          .where('description', isEqualTo: widget.description)
-          .get();
+    
+    if (confirmDelete) {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      if (productQuery.docs.isNotEmpty) {
-        String productDocId = productQuery.docs.first.id;
+      try {
+        QuerySnapshot productQuery = await firestore
+            .collection('products')
+            .where('name', isEqualTo: widget.name)
+            .where('description', isEqualTo: widget.description)
+            .get();
 
-        await firestore.collection('products').doc(productDocId).delete();
-        print('Producto eliminado: ${widget.name}');
-        Navigator.of(context).pop();
-      } else {
-        print('Producto no encontrado: ${widget.name}');
+        if (productQuery.docs.isNotEmpty) {
+          String productDocId = productQuery.docs.first.id;
+
+          await firestore.collection('products').doc(productDocId).delete();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Producto borrado con éxito')),
+          );
+
+Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MisProductos(
+                    ),
+                  ),
+                );
+         
+         
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Producto no encontrado')),
+          );
+        }
+      } catch (e) {
+       
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Producto no encontrado')),
+          SnackBar(content: Text('Error al eliminar el producto: $e')),
         );
       }
-    } catch (e) {
-      print('Error al eliminar el producto: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al eliminar el producto')),
-      );
     }
   }
 }

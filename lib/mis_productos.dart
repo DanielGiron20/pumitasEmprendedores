@@ -144,10 +144,10 @@ class _MisProductosState extends State<MisProductos> {
               description: product['description'],
               image: product['image'],
               price: product['price'],
-              sellerId: product['sellerId'],
+             sellerId: product['sellerId'],
               sellerName: product['sellerName'],
               onTap: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => MiProductoPage(
@@ -156,6 +156,7 @@ class _MisProductosState extends State<MisProductos> {
                       image: product['image'],
                       price: product['price'],
                       category: product['category'],
+                      sellerId: product['sellerId'],
                     ),
                   ),
                 );

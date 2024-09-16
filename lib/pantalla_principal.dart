@@ -169,7 +169,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           // Puedes usar BounceIn, FadeIn, SlideIn, etc.
           duration: Duration(
               milliseconds:
-                  300 + index * 200), // Retraso en la animación por tarjeta
+                  250 + index * 200), // Retraso en la animación por tarjeta
           child: ProductCard(
             name: product['name'],
             description: product['description'],
