@@ -134,7 +134,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   Container(
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color.fromARGB(0, 22, 11, 11),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: Color.fromARGB(
@@ -167,7 +167,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  // Dropdown para categorías
+                  //  ategorias
                   Container(
                     height:
                         80, // Ajusta la altura del contenedor si lo necesitas
