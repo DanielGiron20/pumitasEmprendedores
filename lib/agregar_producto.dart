@@ -28,6 +28,8 @@ class _AgregarProductoState extends State<AgregarProducto> {
   File? _imagenFile;
   BuildContext? _dialogContext;
 
+  bool _imagenSeleccionada = false;
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -267,13 +269,23 @@ class _AgregarProductoState extends State<AgregarProducto> {
                                 ? const Center(
                                     child: Text('Selecciona una imagen'))
                                 : Image.file(_imagenFile!),
+                               
                           ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState?.validate() ?? false) {
-                              _registerProduct();
+                              if (_imagenFile == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Debe seleccionar una imagen'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              } else {
+                                _registerProduct();
+                              }
                             }
                           },
                           child: const Text('Agregar Producto'),

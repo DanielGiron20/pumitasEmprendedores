@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
@@ -148,6 +149,27 @@ class _RegistroPageState extends State<RegistroPage> {
       Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
   }
+
+
+  void _validateEmail() async {
+  String email = _correoController.text.trim(); 
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('sellers')
+      .where('email', isEqualTo: email)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('El correo ya existe, por favor ingrese otro.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } else {
+   
+    registerSeller();
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +336,7 @@ class _RegistroPageState extends State<RegistroPage> {
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: registerSeller,
+                          onPressed: _validateEmail,
                           child: const Text('Registrar'),
                         ),
                         const SizedBox(height: 20),
