@@ -109,7 +109,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(190.0),
+        preferredSize: Size.fromHeight(200.0),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
             bottomLeft:
@@ -166,49 +166,90 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 5),
                   // Dropdown para categorías
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color:
-                            Color.fromARGB(255, 255, 211, 0), // Borde amarillo
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(20), // Circulo amarillo
-                    ),
-                    child: DropdownButton<String>(
-                      value: _selectedCategory,
-                      hint: const Text(
-                        "Todos",
-                        style: TextStyle(
-                            color: Color.fromARGB(
-                                255, 255, 211, 0)), // Letra amarilla
-                      ),
-                      items: _categories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              color: Color.fromARGB(
-                                  255, 255, 211, 0), // Letra amarilla
-                            ),
+                    height:
+                        80, // Ajusta la altura del contenedor si lo necesitas
+                    child: ListView.builder(
+                      scrollDirection:
+                          Axis.horizontal, // Para hacer que sea horizontal
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        String category = _categories[index];
+                        IconData icon;
+
+                        // Asignar íconos dependiendo de la categoría
+                        switch (category) {
+                          case 'Ropa':
+                            icon = Icons.shopping_bag;
+                            break;
+                          case 'Accesorios':
+                            icon = Icons.watch;
+                            break;
+                          case 'Alimentos':
+                            icon = Icons.fastfood;
+                            break;
+                          case 'Salud y belleza':
+                            icon = Icons.favorite;
+                            break;
+                          case 'Deportes':
+                            icon = Icons.sports_soccer;
+                            break;
+                          case 'Tecnologia':
+                            icon = Icons.devices;
+                            break;
+                          case 'Mascotas':
+                            icon = Icons.pets;
+                            break;
+                          case 'Juguetes o juegos':
+                            icon = Icons.videogame_asset;
+                            break;
+                          case 'Libros':
+                            icon = Icons.book;
+                            break;
+                          case 'Arte':
+                            icon = Icons.palette;
+                            break;
+                          case 'Otros':
+                            icon = Icons.category;
+                            break;
+                          default:
+                            icon = Icons
+                                .all_inclusive; // Icono por defecto para "Todos"
+                            break;
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Column(
+                            children: [
+                              IconButton(
+                                icon: Icon(icon,
+                                    color: Color.fromARGB(
+                                        255, 255, 211, 0)), // Color amarillo
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedCategory = category;
+                                  });
+                                  _filterByCategory(
+                                      category); // Filtrar productos
+                                },
+                              ),
+                              Text(
+                                category,
+                                style: TextStyle(
+                                  color: Color.fromARGB(
+                                      255, 255, 211, 0), // Letra amarilla
+                                ),
+                              ),
+                            ],
                           ),
                         );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCategory = newValue;
-                        });
-                        _filterByCategory(newValue); // Filtrar productos
                       },
-                      isExpanded: true,
-                      dropdownColor:
-                          Color.fromARGB(255, 33, 46, 127), // Fondo dropdown
                     ),
                   ),
+
                   const SizedBox(height: 20),
                 ],
               ),
@@ -253,7 +294,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 10),
           Expanded(
             child: _buildProductList(),
           ),
