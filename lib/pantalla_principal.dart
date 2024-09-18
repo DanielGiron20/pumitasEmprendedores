@@ -206,7 +206,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                       },
                       isExpanded: true,
                       dropdownColor:
-                          Color.fromARGB(255, 255, 211, 0), // Fondo dropdown
+                          Color.fromARGB(255, 33, 46, 127), // Fondo dropdown
                     ),
                   ),
                   const SizedBox(height: 20),
