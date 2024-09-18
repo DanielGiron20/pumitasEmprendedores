@@ -5,7 +5,6 @@ import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/producto.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
-import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
 
 class PantallaPrincipal extends StatefulWidget {
@@ -20,9 +19,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
   final TextEditingController controller = TextEditingController();
-  String? _selectedCategory;  
+  String? _selectedCategory;
   List<String> _categories = [
-    'Todos', 
+    'Todos',
     'Ropa',
     'Accesorios',
     'Alimentos',
@@ -34,7 +33,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Libros',
     'Arte',
     'Otros'
-  ]; 
+  ];
 
   @override
   void initState() {
@@ -80,7 +79,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     setState(() {
       if (query.isEmpty) {
         _products = List.from(_allProducts);
-        
       } else {
         final searchLower = query.toLowerCase();
         _products = _allProducts.where((product) {
@@ -99,89 +97,163 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void _filterByCategory(String? category) {
     setState(() {
       if (category == 'Todos' || category == null) {
-        _products = List.from(_allProducts); 
+        _products = List.from(_allProducts);
       } else {
         _products = _allProducts
             .where((product) => product['category'] == category)
-            .toList(); 
+            .toList();
       }
     });
   }
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pumitas emprendedores'),
-        actions: [
-          _currentUser != null
-              ? Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed (
-                            context, MyRoutes.PerfilPersonal.name);
-                      },
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(_currentUser!.logo),
-                            radius: 20,
-                          ),
-                          const SizedBox(width: 10),
-                        ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(190.0),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft:
+                Radius.circular(40.0), // Borde inferior izquierdo redondeado
+            bottomRight:
+                Radius.circular(40.0), // Borde inferior derecho redondeado
+          ),
+          child: AppBar(
+            backgroundColor: Color.fromARGB(255, 33, 46, 127),
+            title: const Text(
+              'Pumitas Emprendedores',
+              style: TextStyle(
+                  color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
+            ),
+            flexibleSpace: Padding(
+              padding:
+                  const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Barra de búsqueda
+                  Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: Color.fromARGB(
+                            255, 255, 211, 0), // Detalle en amarillo
+                        width: 2.0,
                       ),
                     ),
-                  ],
-                )
-              : IconButton(
-                  icon: const Icon(Icons.login),
-                  onPressed: () {
-                    Navigator.pushNamed(context, MyRoutes.Login.name);
-                  },
-                ),
-        ],
+                    child: TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar producto...',
+                        hintStyle: TextStyle(
+                          color: Color.fromARGB(
+                              255, 255, 211, 0), // Letra amarilla
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color.fromARGB(255, 255, 211, 0),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none, // Sin borde visible
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 20),
+                      ),
+                      onChanged: (value) {
+                        _searchProducts(value); // Método para buscar productos
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Dropdown para categorías
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color:
+                            Color.fromARGB(255, 255, 211, 0), // Borde amarillo
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(20), // Circulo amarillo
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedCategory,
+                      hint: const Text(
+                        "Todos",
+                        style: TextStyle(
+                            color: Color.fromARGB(
+                                255, 255, 211, 0)), // Letra amarilla
+                      ),
+                      items: _categories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              color: Color.fromARGB(
+                                  255, 255, 211, 0), // Letra amarilla
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                        _filterByCategory(newValue); // Filtrar productos
+                      },
+                      isExpanded: true,
+                      dropdownColor:
+                          Color.fromARGB(255, 255, 211, 0), // Fondo dropdown
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+            actions: [
+              _currentUser != null
+                  ? Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(
+                                context, MyRoutes.PerfilPersonal.name);
+                          },
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(_currentUser!.logo),
+                                radius: 20,
+                                backgroundColor: Color.fromARGB(
+                                    255, 255, 211, 0), // Borde amarillo
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : IconButton(
+                      icon: const Icon(
+                        Icons.login,
+                        color:
+                            Color.fromARGB(255, 255, 211, 0), // Ícono amarillo
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, MyRoutes.Login.name);
+                      },
+                    ),
+            ],
+          ),
+        ),
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar producto...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    _searchProducts(value);
-                  },
-                ),
-                const SizedBox(height: 10), // Espacio entre el buscador y el comboBox
-                // DropdownButton para seleccionar categorías
-                DropdownButton<String>(
-                  value: _selectedCategory,
-                  hint: const Text("Todos"),
-                  items: _categories.map((String category) {
-                    return DropdownMenuItem<String>(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedCategory = newValue;
-                    });
-                    _filterByCategory(newValue); // Llamar a la función que filtra los productos
-                  },
-                  isExpanded: true,
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 10),
           Expanded(
             child: _buildProductList(),
           ),
@@ -189,6 +261,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       ),
     );
   }
+
   Widget _buildProductList() {
     if (_products.isEmpty) {
       return const Center(

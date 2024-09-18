@@ -1,9 +1,11 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/mis_productos.dart';
+import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class EditarProductosPage extends StatefulWidget {
   final String name;
@@ -21,7 +23,7 @@ class EditarProductosPage extends StatefulWidget {
     required this.price,
     required this.category,
     required this.sellerId,
-   // Inicializar en el constructor
+    // Inicializar en el constructor
     Key? key,
   }) : super(key: key);
 
@@ -81,61 +83,56 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     }
   }
 
- Future<void> _saveChanges() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future<void> _saveChanges() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      String? newImageUrl = widget.image; 
+        String? newImageUrl = widget.image;
 
-      if (_imageFile != null) {
-        newImageUrl = await _uploadImage(_imageFile!);
-      }
+        if (_imageFile != null) {
+          newImageUrl = await _uploadImage(_imageFile!);
+        }
 
-      QuerySnapshot productQuery = await firestore
-          .collection('products')
-          .where('name', isEqualTo: widget.name)
-          .where('description', isEqualTo: widget.description)
-          .where('price', isEqualTo: widget.price)
-          .where('category', isEqualTo: widget.category)
-          .get();
+        QuerySnapshot productQuery = await firestore
+            .collection('products')
+            .where('name', isEqualTo: widget.name)
+            .where('description', isEqualTo: widget.description)
+            .where('price', isEqualTo: widget.price)
+            .where('category', isEqualTo: widget.category)
+            .get();
 
-      
-      if (productQuery.docs.isNotEmpty) {
-       
-        String documentId = productQuery.docs.first.id;
-print("Llego aca");
-        await firestore.collection('products').doc(documentId).update({
-          'name': _nameController.text,
-          'description': _descriptionController.text,
-          'price': double.parse(_priceController.text),
-          'category': _categoryController.text,
-          'image': newImageUrl, 
+        if (productQuery.docs.isNotEmpty) {
+          String documentId = productQuery.docs.first.id;
+          print("Llego aca");
+          await firestore.collection('products').doc(documentId).update({
+            'name': _nameController.text,
+            'description': _descriptionController.text,
+            'price': double.parse(_priceController.text),
+            'category': _categoryController.text,
+            'image': newImageUrl,
+          });
 
-        });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Producto actualizado con éxito')),
+          );
 
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MisProductos(),
+            ),
+          );
+        } else {
+          print("No se encontro el producto");
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Producto actualizado con éxito')),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MisProductos(),
-          ),
+          SnackBar(content: Text('Error al actualizar el producto: $e')),
         );
       }
-      else{
-        print("No se encontro el producto");
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar el producto: $e')),
-      );
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,49 +154,80 @@ print("Llego aca");
                 onPressed: _pickImage,
                 child: const Text('Seleccionar Imagen'),
               ),
-              TextFormField(
+              CustomInputs(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'El nombre no puede estar vacío';
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'El nombre es obligatorio';
                   }
                   return null;
                 },
+                teclado: TextInputType.text,
+                hint: 'Ingrese el nombre del producto',
+                nombrelabel: 'Nombre del producto',
+                icono: Icons.store,
+                show: false,
               ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Descripción'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'La descripción no puede estar vacía';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Precio'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'El precio no puede estar vacío';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Ingrese un valor válido para el precio';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
+              const SizedBox(height: 20),
+              CustomInputs(
                 controller: _categoryController,
-                decoration: const InputDecoration(labelText: 'Categoría'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'La categoría no puede estar vacía';
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'La categoría es obligatoria';
                   }
                   return null;
                 },
+                teclado: TextInputType.text,
+                hint: 'Ingrese la categoría del producto',
+                nombrelabel: 'Categoría',
+                icono: Icons.category,
+                show: false,
+                items: [
+                  'Ropa',
+                  'Accesorios',
+                  'Alimentos',
+                  'Salud y belleza',
+                  'Deportes',
+                  'Tecnologia',
+                  'Mascotas',
+                  'Juguetes o juegos',
+                  'Libros',
+                  'Arte',
+                  'Otros'
+                ],
+              ),
+              const SizedBox(height: 20),
+              CustomInputs(
+                controller: _descriptionController,
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'La descripción es obligatoria';
+                  }
+                  return null;
+                },
+                teclado: TextInputType.text,
+                hint: 'Ingrese la descripción del producto',
+                nombrelabel: 'Descripción',
+                icono: Icons.description,
+                show: false,
+              ),
+              const SizedBox(height: 20),
+              CustomInputs(
+                controller: _priceController,
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'El precio es obligatorio';
+                  }
+                  if (double.tryParse(valor) == null) {
+                    return 'El precio debe ser un número';
+                  }
+                  return null;
+                },
+                teclado: TextInputType.number,
+                hint: 'Ingrese el precio del producto',
+                nombrelabel: 'Precio',
+                icono: Icons.attach_money,
+                show: false,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
