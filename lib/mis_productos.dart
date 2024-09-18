@@ -155,7 +155,7 @@ class _MisProductosState extends State<MisProductos> {
               sellerId: product['sellerId'],
               sellerName: product['sellerName'],
               onTap: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => MiProductoPage(

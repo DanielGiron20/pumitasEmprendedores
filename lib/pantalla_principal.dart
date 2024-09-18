@@ -20,6 +20,22 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
   final TextEditingController controller = TextEditingController();
+  String? _selectedCategory;  
+  List<String> _categories = [
+    'Todos', 
+    'Ropa',
+    'Accesorios',
+    'Alimentos',
+    'Salud y belleza',
+    'Deportes',
+    'Tecnologia',
+    'Mascotas',
+    'Juguetes o juegos',
+    'Libros',
+    'Arte',
+    'Otros'
+  ]; 
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +80,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     setState(() {
       if (query.isEmpty) {
         _products = List.from(_allProducts);
+        
       } else {
         final searchLower = query.toLowerCase();
         _products = _allProducts.where((product) {
@@ -79,6 +96,18 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
+  void _filterByCategory(String? category) {
+    setState(() {
+      if (category == 'Todos' || category == null) {
+        _products = List.from(_allProducts); 
+      } else {
+        _products = _allProducts
+            .where((product) => product['category'] == category)
+            .toList(); 
+      }
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +118,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(
+                        Navigator.pushNamed (
                             context, MyRoutes.PerfilPersonal.name);
                       },
                       child: Row(
@@ -112,18 +141,13 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                 ),
         ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BackgroundPainter(),
-            ),
-          ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
                   controller: controller,
                   decoration: InputDecoration(
                     hintText: 'Buscar producto...',
@@ -136,21 +160,45 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     _searchProducts(value);
                   },
                 ),
-              ),
-              Expanded(
-                child: _buildProductList(),
-              ),
-            ],
+                const SizedBox(height: 10), // Espacio entre el buscador y el comboBox
+                // DropdownButton para seleccionar categorías
+                DropdownButton<String>(
+                  value: _selectedCategory,
+                  hint: const Text("Todos"),
+                  items: _categories.map((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCategory = newValue;
+                    });
+                    _filterByCategory(newValue); // Llamar a la función que filtra los productos
+                  },
+                  isExpanded: true,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _buildProductList(),
           ),
         ],
       ),
     );
   }
-
   Widget _buildProductList() {
     if (_products.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: Text(
+          'No se encontraron productos',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       );
     }
 

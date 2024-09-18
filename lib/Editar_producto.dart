@@ -86,7 +86,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      String? newImageUrl = widget.image; // URL actual por defecto
+      String? newImageUrl = widget.image; 
 
       if (_imageFile != null) {
         newImageUrl = await _uploadImage(_imageFile!);
@@ -100,18 +100,18 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           .where('category', isEqualTo: widget.category)
           .get();
 
-      // Verifica si se encontró algún producto
+      
       if (productQuery.docs.isNotEmpty) {
-        // Obtén el ID del documento
+       
         String documentId = productQuery.docs.first.id;
-
-        // Actualiza el documento usando el ID
+print("Llego aca");
         await firestore.collection('products').doc(documentId).update({
           'name': _nameController.text,
           'description': _descriptionController.text,
           'price': double.parse(_priceController.text),
           'category': _categoryController.text,
-          'image': newImageUrl, // Usa la nueva URL de la imagen
+          'image': newImageUrl, 
+
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +124,9 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
             builder: (context) => MisProductos(),
           ),
         );
+      }
+      else{
+        print("No se encontro el producto");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
