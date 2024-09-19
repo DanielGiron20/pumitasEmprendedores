@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pumitas_emprendedores/ProductosPorVendedor.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math'; 
 
 class ProductoPage extends StatefulWidget {
   final String name;
@@ -25,42 +27,72 @@ class ProductoPage extends StatefulWidget {
   _ProductoPageState createState() => _ProductoPageState();
 }
 
-class _ProductoPageState extends State<ProductoPage> {
+class _ProductoPageState extends State<ProductoPage>
+    with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _sellerData;
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _fetchSellerData();
+
+    // Inicializa el controlador de animación
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2), // Duración del giro
+    )..repeat(); // Repite la animación infinitamente
+
+    _animation = Tween<double>(begin: 0, end: 2 * pi).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchSellerData() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    try {
-      QuerySnapshot sellerQuery = await firestore
-          .collection('sellers')
-          .where('name', isEqualTo: widget.sellerName)
-          .get();
+  try {
+    QuerySnapshot sellerQuery = await firestore
+        .collection('sellers')
+        .where('name', isEqualTo: widget.sellerName)
+        .get();
 
-      if (sellerQuery.docs.isNotEmpty) {
-        Map<String, dynamic> sellerData =
-            sellerQuery.docs.first.data() as Map<String, dynamic>;
-        setState(() {
-          _sellerData = sellerData;
-        });
-      } else {
-        print(
-            'No se encontraron vendedores con el nombre ${widget.sellerName}');
-      }
-    } catch (e) {
-      print('Error al cargar los datos del vendedor: $e');
+    if (sellerQuery.docs.isNotEmpty) {
+      DocumentSnapshot sellerDoc = sellerQuery.docs.first;
+      Map<String, dynamic> sellerData = sellerDoc.data() as Map<String, dynamic>;
+
+    
+      sellerData['id'] = sellerDoc.id;
+
+      setState(() {
+        _sellerData = sellerData;
+      });
+    } else {
+      print('No se encontraron vendedores con el nombre ${widget.sellerName}');
     }
+  } catch (e) {
+    print('Error al cargar los datos del vendedor: $e');
   }
+}
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _navigateToSellerProducts() {
+   
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductosVendedorPage(sellerId: _sellerData!['id']),
+      ),
+    );
   }
 
   @override
@@ -103,7 +135,7 @@ class _ProductoPageState extends State<ProductoPage> {
                     textAlign: TextAlign.justify,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Divider(
                   thickness: 1,
                   color: Colors.grey[300],
@@ -114,17 +146,70 @@ class _ProductoPageState extends State<ProductoPage> {
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        // Foto del vendedor
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(_sellerData!['logo']),
-                          radius: 30,
+                        Text(
+                          'Conocer mas productos de ' + _sellerData!['name'],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                         const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: _navigateToSellerProducts,
+                          child: AnimatedBuilder(
+                            animation: _animation,
+                            builder: (context, child) {
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // El borde giratorio
+                                  Transform.rotate(
+                                    angle: _animation.value,
+                                    child: Container(
+                                      width: 90,
+                                      height: 90,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: SweepGradient(
+                                          colors: [
+                                          Color.fromARGB(255, 29, 234, 237),
+                                          Color.fromARGB(255, 29, 234, 237),
+                                          Color.fromARGB(255, 255, 211, 0),
+                                         Color.fromARGB(255, 255, 211, 0),
+                                        Color.fromARGB(255, 30, 255, 251),
+                                          ],
+                                          stops: const [
+                                            0.0,
+                                            0.25,
+                                            0.5,
+                                            0.75,
+                                            1.0
+                                          ],
+                                          startAngle: 0.0,
+                                          endAngle: 2 * pi,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  
+                                  // El avatar del vendedor
+                                  CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(_sellerData!['logo']),
+                                    radius: 40,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                         const SizedBox(height: 10),
                         // Nombre del vendedor
                         Text(
                           'Para contactar con ' + _sellerData!['name'],
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -136,6 +221,7 @@ class _ProductoPageState extends State<ProductoPage> {
                             IconButton(
                               icon: const FaIcon(FontAwesomeIcons.whatsapp,
                                   color: Colors.green),
+                                  iconSize: 40,
                               onPressed: () {
                                 final whatsappUrl =
                                     'https://wa.me/${_sellerData!['whatsapp']}?text=${Uri.encodeComponent('Vi tu producto ${widget.name} en Pumitas Emprendedores y me interesó')}';
@@ -145,7 +231,8 @@ class _ProductoPageState extends State<ProductoPage> {
                             const SizedBox(width: 20),
                             IconButton(
                               icon: const FaIcon(FontAwesomeIcons.instagram,
-                                  color: Colors.purple),
+                                  color: Color.fromARGB(255, 244, 23, 189)),
+                                  iconSize: 40,
                               onPressed: () {
                                 final instagramUrl =
                                     'https://www.instagram.com/${_sellerData!['instagram']}/';

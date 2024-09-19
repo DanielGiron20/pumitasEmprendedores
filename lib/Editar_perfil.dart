@@ -98,8 +98,6 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Perfil actualizado con éxito')),
         );
-
-        // Navegar de regreso o hacer lo que necesites
         Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
