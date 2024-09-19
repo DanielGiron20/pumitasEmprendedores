@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
+import 'package:pumitas_emprendedores/Editar_perfil.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/custom_buttom.dart';
@@ -21,6 +22,8 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
     super.initState();
     _loadUser();
   }
+
+
 
   Future<void> _loadUser() async {
     try {
@@ -148,7 +151,34 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 20),
+
+                        // Botón de 'Editar Perfil'
+                        CustomButton(
+                          label: 'Editar Perfil',
+                          backgroundColor:
+                              const Color.fromARGB(255, 57, 57, 57),
+                          textColor: Colors.white, // Texto blanco
+                          icon: Icons.add,
+                          onPressed: () {
+                          Navigator.of(context).pushReplacement(
+  MaterialPageRoute(
+    builder: (context) => EditarPerfilPage(
+      userName: _currentUser!.name,
+      whatsapp: _currentUser!.whatsapp,
+      imageUrl: _currentUser!.logo,
+      instagram: _currentUser!.instagram,
+      descripcion: _currentUser!.description,
+      id: _currentUser!.id,
+    ),
+  ),
+);
+
+                          },
+                        ),
+
+                        const SizedBox(height: 10),
 
                         // Botón de 'Agregar Producto'
                         CustomButton(
