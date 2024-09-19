@@ -3,24 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
+import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 
 class EditarPerfilPage extends StatefulWidget {
-  final String userName;
-  final String whatsapp;
-  final String imageUrl;
-  final String instagram;
-  final String descripcion;
-  final String id;
-
-  const EditarPerfilPage({
-    required this.userName,
-    required this.whatsapp,
-    required this.imageUrl,
-    required this.instagram,
-    required this.descripcion,
-    required this.id,
-    Key? key, 
-  }) : super(key: key);
+  EditarPerfilPage({Key? key}) : super(key: key);
 
   @override
   _EditarPerfilPageState createState() => _EditarPerfilPageState();
@@ -32,15 +20,13 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   late TextEditingController _whatsappController;
   late TextEditingController _instagramController;
   late TextEditingController _descripcionController;
-  File? _imageFile; // Para almacenar la imagen seleccionada
+  File? _imageFile;
+  Usuario? _currentUser; // Mueve _currentUser aquí
 
   @override
   void initState() {
     super.initState();
-    _userNameController = TextEditingController(text: widget.userName);
-    _whatsappController = TextEditingController(text: widget.whatsapp);
-    _instagramController = TextEditingController(text: widget.instagram);
-    _descripcionController = TextEditingController(text: widget.descripcion);
+    _checkUser();
   }
 
   @override
@@ -50,6 +36,36 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
     _instagramController.dispose();
     _descripcionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _logout() async {
+    try {
+      List<Usuario> usuarios = await DBHelper.queryUsuarios();
+      if (usuarios.isNotEmpty) {
+        Usuario userToDelete = usuarios.first;
+        await DBHelper.deleteUsuario(userToDelete);
+      } else {
+        print("No hay usuarios disponibles para eliminar.");
+      }
+    } catch (e) {
+      print("Error al eliminar el usuario: $e");
+    }
+  }
+
+  Future<void> _checkUser() async {
+    List<Usuario> usuarios = await DBHelper.queryUsuarios();
+    if (usuarios.isNotEmpty) {
+      setState(() {
+        _currentUser = usuarios.first;
+        _userNameController = TextEditingController(text: _currentUser?.name);
+        _whatsappController =
+            TextEditingController(text: _currentUser?.whatsapp);
+        _instagramController =
+            TextEditingController(text: _currentUser?.instagram);
+        _descripcionController =
+            TextEditingController(text: _currentUser?.description);
+      });
+    }
   }
 
   Future<void> _pickImage() async {
@@ -83,16 +99,31 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
       try {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-        String? newImageUrl = widget.imageUrl;
+        String? newImageUrl = _currentUser?.logo;
         if (_imageFile != null) {
           newImageUrl = await _uploadImage(_imageFile!);
         }
-        await firestore.collection('sellers').doc(widget.id).update({
+
+        // Actualiza en Firebase
+        await firestore.collection('sellers').doc(_currentUser!.id).update({
           'name': _userNameController.text,
           'whatsapp': _whatsappController.text,
           'logo': newImageUrl,
           'instagram': _instagramController.text,
           'description': _descripcionController.text,
+        });
+
+        // Actualiza en la base de datos local usando el UsuarioController
+        final usuarioController = UsuarioController();
+        await usuarioController.updateUsuario(_currentUser!.id, {
+          'name': _userNameController.text,
+          'email': _currentUser!.email.toString(),
+          'description': _descripcionController.text,
+          'instagram': _instagramController.text,
+          'whatsapp': _whatsappController.text,
+          'password': _currentUser!.password.toString(),
+          'logo': newImageUrl.toString(),
+          'sede': _currentUser!.sede.toString(),
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,74 +146,73 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              
-              _imageFile == null
-                  ? Image.network(widget.imageUrl, height: 200)
-                  : Image.file(_imageFile!, height: 200),
-              TextButton(
-                onPressed: _pickImage,
-                child: const Text('Seleccionar Imagen'),
+        child: _currentUser == null
+            ? const Center(child: CircularProgressIndicator())
+            : Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    _imageFile == null
+                        ? Image.network(_currentUser!.logo, height: 200)
+                        : Image.file(_imageFile!, height: 200),
+                    TextButton(
+                      onPressed: _pickImage,
+                      child: const Text('Seleccionar Imagen'),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _userNameController,
+                      decoration:
+                          const InputDecoration(labelText: 'Nombre de Usuario'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El nombre de usuario es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _descripcionController,
+                      decoration:
+                          const InputDecoration(labelText: 'Descripción'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'La descripción es obligatoria';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _whatsappController,
+                      decoration: const InputDecoration(labelText: 'Whatsapp'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El whatsapp es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _instagramController,
+                      decoration: const InputDecoration(labelText: 'Instagram'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El instagram es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _saveProfileChanges,
+                      child: const Text('Guardar cambios'),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _userNameController,
-                decoration: const InputDecoration(labelText: 'Nombre de Usuario'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'El nombre de usuario es obligatorio';
-                  }
-                  return null;
-                },
-              ),
-            
- const SizedBox(height: 20),
-              TextFormField(
-                controller: _descripcionController,
-                decoration: const InputDecoration(labelText: 'Descripcion'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'El instagram es obligatorio';
-                  }
-                },
-              ),
-
-               const SizedBox(height: 20),
-              TextFormField(
-                controller: _whatsappController,
-                decoration: const InputDecoration(labelText: 'Whatsapp'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'El whatsapp es obligatorio';
-                  }
-                },
-              ),
-
-
-const SizedBox(height: 20),
-              TextFormField(
-                controller: _instagramController,
-                decoration: const InputDecoration(labelText: 'Descripcion'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'La descripción es obligatoria'; 
-                  }
-                },
-              ),
-
-
-
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveProfileChanges,
-                child: const Text('Guardar cambios'),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

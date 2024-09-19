@@ -359,6 +359,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     price: product['price'],
                     category: product['category'],
                     sellerName: product['sellerName'],
+                    sellerId: product['sellerId'],
                   ),
                 ),
               );

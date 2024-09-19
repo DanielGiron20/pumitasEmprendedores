@@ -164,14 +164,7 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
                           onPressed: () {
                           Navigator.of(context).pushReplacement(
   MaterialPageRoute(
-    builder: (context) => EditarPerfilPage(
-      userName: _currentUser!.name,
-      whatsapp: _currentUser!.whatsapp,
-      imageUrl: _currentUser!.logo,
-      instagram: _currentUser!.instagram,
-      descripcion: _currentUser!.description,
-      id: _currentUser!.id,
-    ),
+    builder: (context) => EditarPerfilPage(),
   ),
 );
 

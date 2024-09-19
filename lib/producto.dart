@@ -12,6 +12,7 @@ class ProductoPage extends StatefulWidget {
   final double price;
   final String category;
   final String sellerName;
+  final String sellerId;
 
   const ProductoPage({
     required this.name,
@@ -20,6 +21,7 @@ class ProductoPage extends StatefulWidget {
     required this.price,
     required this.category,
     required this.sellerName,
+    required this.sellerId,
     Key? key,
   }) : super(key: key);
 
@@ -38,11 +40,11 @@ class _ProductoPageState extends State<ProductoPage>
     super.initState();
     _fetchSellerData();
 
-    // Inicializa el controlador de animación
+    
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2), // Duración del giro
-    )..repeat(); // Repite la animación infinitamente
+      duration: const Duration(seconds: 2), 
+    )..repeat(); 
 
     _animation = Tween<double>(begin: 0, end: 2 * pi).animate(_controller);
   }
@@ -53,27 +55,23 @@ class _ProductoPageState extends State<ProductoPage>
     super.dispose();
   }
 
-  Future<void> _fetchSellerData() async {
+ Future<void> _fetchSellerData() async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   try {
-    QuerySnapshot sellerQuery = await firestore
-        .collection('sellers')
-        .where('name', isEqualTo: widget.sellerName)
-        .get();
+   
+    DocumentSnapshot sellerDoc = await firestore.collection('sellers').doc(widget.sellerId).get();
 
-    if (sellerQuery.docs.isNotEmpty) {
-      DocumentSnapshot sellerDoc = sellerQuery.docs.first;
+    if (sellerDoc.exists) {
       Map<String, dynamic> sellerData = sellerDoc.data() as Map<String, dynamic>;
-
-    
-      sellerData['id'] = sellerDoc.id;
+      
+      sellerData['id'] = sellerDoc.id; 
 
       setState(() {
         _sellerData = sellerData;
       });
     } else {
-      print('No se encontraron vendedores con el nombre ${widget.sellerName}');
+      print('No se encontró el vendedor con ID ${widget.sellerId}');
     }
   } catch (e) {
     print('Error al cargar los datos del vendedor: $e');
@@ -231,7 +229,7 @@ class _ProductoPageState extends State<ProductoPage>
                             const SizedBox(width: 20),
                             IconButton(
                               icon: const FaIcon(FontAwesomeIcons.instagram,
-                                  color: Color.fromARGB(255, 244, 23, 189)),
+                                  color: Color.fromARGB(255, 176, 39, 142)),
                                   iconSize: 40,
                               onPressed: () {
                                 final instagramUrl =
