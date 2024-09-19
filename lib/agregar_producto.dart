@@ -219,9 +219,10 @@ class _AgregarProductoState extends State<AgregarProducto> {
                             'Deportes',
                             'Tecnologia',
                             'Mascotas',
-                            'Juguetes o juegos',
+                            'Juegos',
                             'Libros',
                             'Arte',
+                            'Arreglos y regalos',
                             'Otros'
                           ],
                         ),

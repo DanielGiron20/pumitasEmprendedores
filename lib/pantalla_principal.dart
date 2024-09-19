@@ -26,10 +26,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Accesorios',
     'Alimentos',
     'Salud y belleza',
+    'Arreglos y regalos'  ,
     'Deportes',
     'Tecnologia',
     'Mascotas',
-    'Juguetes o juegos',
+    'Juegos',
     'Libros',
     'Arte',
     'Otros'
@@ -193,6 +194,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           case 'Salud y belleza':
                             icon = Icons.favorite;
                             break;
+                          case 'Arreglos y regalos':
+                            icon = Icons.cake;
+                            break;
                           case 'Deportes':
                             icon = Icons.sports_soccer;
                             break;
@@ -202,7 +206,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           case 'Mascotas':
                             icon = Icons.pets;
                             break;
-                          case 'Juguetes o juegos':
+                          case 'Juegos':
                             icon = Icons.videogame_asset;
                             break;
                           case 'Libros':
@@ -216,7 +220,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                             break;
                           default:
                             icon = Icons
-                                .all_inclusive; // Icono por defecto para "Todos"
+                                .all_inclusive; 
                             break;
                         }
 
