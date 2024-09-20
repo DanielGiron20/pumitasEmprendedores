@@ -83,7 +83,29 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   }
 
   Future<void> _saveChanges() async {
-    if (_formKey.currentState!.validate()) {
+
+     bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar Producto'),
+          content: const Text('¿Estás seguro que deseas editar este producto?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), 
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), 
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if(confirmDelete == true) {
+       if (_formKey.currentState!.validate()) {
       try {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -103,7 +125,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
         if (productQuery.docs.isNotEmpty) {
           String documentId = productQuery.docs.first.id;
-          print("Llego aca");
+    
           await firestore.collection('products').doc(documentId).update({
             'name': _nameController.text,
             'description': _descriptionController.text,
@@ -130,6 +152,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           SnackBar(content: Text('Error al actualizar el producto: $e')),
         );
       }
+     }
     }
   }
 
@@ -145,7 +168,6 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           key: _formKey,
           child: ListView(
             children: [
-              // Muestra la imagen actual o la imagen seleccionada
               _imageFile == null
                   ? Image.network(widget.image, height: 200)
                   : Image.file(_imageFile!, height: 200),

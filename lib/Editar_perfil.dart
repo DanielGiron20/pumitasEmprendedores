@@ -95,7 +95,30 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   }
 
   Future<void> _saveProfileChanges() async {
-    if (_formKey.currentState!.validate()) {
+
+    
+     bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar Perfil'),
+          content: const Text('¿Estás seguro que desea guardar estos cambios en su perfil?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), 
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), 
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if(confirmDelete == true) {
+if (_formKey.currentState!.validate()) {
       try {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -136,6 +159,10 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
         );
       }
     }
+
+
+    }
+    
   }
 
   @override
