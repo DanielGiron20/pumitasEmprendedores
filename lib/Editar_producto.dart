@@ -36,7 +36,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
   late TextEditingController _categoryController;
-  File? _imageFile; // Archivo de imagen
+  String? _selectedCategory;
+  File? _imageFile; 
 
   @override
   void initState() {
@@ -45,6 +46,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     _descriptionController = TextEditingController(text: widget.description);
     _priceController = TextEditingController(text: widget.price.toString());
     _categoryController = TextEditingController(text: widget.category);
+    _selectedCategory = widget.category;
+    print(widget.category);  
   }
 
   @override
@@ -130,7 +133,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
             'name': _nameController.text,
             'description': _descriptionController.text,
             'price': double.parse(_priceController.text),
-            'category': _categoryController.text,
+            'category': _selectedCategory,
             'image': newImageUrl,
           });
 
@@ -189,9 +192,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 icono: Icons.store,
                 show: false,
               ),
-              const SizedBox(height: 20),
+              /* const SizedBox(height: 20),
               CustomInputs(
-                controller: _categoryController,
                 validator: (valor) {
                   if (valor == null || valor.isEmpty) {
                     return 'La categoría es obligatoria';
@@ -208,15 +210,64 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   'Accesorios',
                   'Alimentos',
                   'Salud y belleza',
+                  'Arreglos y regalos',
                   'Deportes',
                   'Tecnologia',
                   'Mascotas',
-                  'Juguetes o juegos',
+                  'Juegos',
                   'Libros',
                   'Arte',
                   'Otros'
                 ],
+                controller:  _categoryController,
               ),
+
+              */
+              
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory, 
+                decoration: InputDecoration(
+                  labelText: _selectedCategory,
+                  icon: Icon(Icons.category),
+                ),
+                items: [
+                  'Ropa',
+                  'Accesorios',
+                  'Alimentos',
+                  'Salud y belleza',
+                  'Arreglos y regalos',
+                  'Deportes',
+                  'Tecnologia',
+                  'Mascotas',
+                  'Juegos',
+                  'Libros',
+                  'Arte',
+                  'Otros'
+                ].map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'La categoría es obligatoria';
+                  }
+                  return null;
+                },
+              ),
+
+
+
+
+
+
               const SizedBox(height: 20),
               CustomInputs(
                 controller: _descriptionController,

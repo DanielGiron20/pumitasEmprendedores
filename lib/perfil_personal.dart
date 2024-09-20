@@ -43,7 +43,31 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
   }
 
   Future<void> _logout() async {
-    try {
+bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cerrar sesion'),
+          content: const Text('¿Estás seguro que desea cerrar sesion?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), 
+              child: const Text('No'),
+              
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), 
+              child: const Text('Sí'),
+              
+            ),
+          ],
+        );
+      },
+    );
+
+    if(confirmDelete == true)
+    {
+try {
       List<Usuario> usuarios = await DBHelper.queryUsuarios();
       if (usuarios.isNotEmpty) {
         Usuario userToDelete = usuarios.first;
@@ -59,6 +83,10 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
     } catch (e) {
       print("Error al eliminar el usuario: $e");
     }
+
+
+    }
+
   }
 
   @override
