@@ -158,6 +158,12 @@ class _RegistroPageState extends State<RegistroPage> {
       .where('email', isEqualTo: email)
       .get();
 
+       String name = _nombreController.text.trim(); 
+  QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
+      .collection('sellers')
+      .where('name', isEqualTo: name)
+      .get();
+
   if (querySnapshot.docs.isNotEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -165,11 +171,22 @@ class _RegistroPageState extends State<RegistroPage> {
         backgroundColor: Colors.red,
       ),
     );
-  } else {
+  } 
+  if(querySnapshot2.docs.isNotEmpty){
+     ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('El nombre de usuario ya existe, por favor ingrese otro.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+  else {
    
     registerSeller();
   }
 }
+
+
 
   @override
   Widget build(BuildContext context) {
