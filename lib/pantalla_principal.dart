@@ -5,6 +5,7 @@ import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/producto.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
+import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
 
 class PantallaPrincipal extends StatefulWidget {
@@ -26,7 +27,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Accesorios',
     'Alimentos',
     'Salud y belleza',
-    'Arreglos y regalos'  ,
+    'Arreglos y regalos',
     'Deportes',
     'Tecnologia',
     'Mascotas',
@@ -109,201 +110,207 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(200.0),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            bottomLeft:
-                Radius.circular(40.0), // Borde inferior izquierdo redondeado
-            bottomRight:
-                Radius.circular(40.0), // Borde inferior derecho redondeado
-          ),
-          child: AppBar(
-            backgroundColor: Color.fromARGB(255, 33, 46, 127),
-            title: const Text(
-              'Pumitas Emprendedores',
-              style: TextStyle(
-                  color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(200.0),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft:
+                  Radius.circular(40.0), // Borde inferior izquierdo redondeado
+              bottomRight:
+                  Radius.circular(40.0), // Borde inferior derecho redondeado
             ),
-            flexibleSpace: Padding(
-              padding:
-                  const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Barra de búsqueda
-                  Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(0, 22, 11, 11),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Color.fromARGB(
-                            255, 255, 211, 0), // Detalle en amarillo
-                        width: 2.0,
-                      ),
-                    ),
-                    child: TextField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        hintText: 'Buscar producto...',
-                        hintStyle: TextStyle(
-                          color: Color.fromARGB(
-                              255, 255, 211, 0), // Letra amarilla
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Color.fromARGB(255, 255, 211, 0),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none, // Sin borde visible
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 20),
-                      ),
-                      onChanged: (value) {
-                        _searchProducts(value); // Método para buscar productos
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  //  ategorias
-                  Container(
-                    height:
-                        80, // Ajusta la altura del contenedor si lo necesitas
-                    child: ListView.builder(
-                      scrollDirection:
-                          Axis.horizontal, // Para hacer que sea horizontal
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        String category = _categories[index];
-                        IconData icon;
-
-                        // Asignar íconos dependiendo de la categoría
-                        switch (category) {
-                          case 'Ropa':
-                            icon = Icons.shopping_bag;
-                            break;
-                          case 'Accesorios':
-                            icon = Icons.watch;
-                            break;
-                          case 'Alimentos':
-                            icon = Icons.fastfood;
-                            break;
-                          case 'Salud y belleza':
-                            icon = Icons.favorite;
-                            break;
-                          case 'Arreglos y regalos':
-                            icon = Icons.cake;
-                            break;
-                          case 'Deportes':
-                            icon = Icons.sports_soccer;
-                            break;
-                          case 'Tecnologia':
-                            icon = Icons.devices;
-                            break;
-                          case 'Mascotas':
-                            icon = Icons.pets;
-                            break;
-                          case 'Juegos':
-                            icon = Icons.videogame_asset;
-                            break;
-                          case 'Libros':
-                            icon = Icons.book;
-                            break;
-                          case 'Arte':
-                            icon = Icons.palette;
-                            break;
-                          case 'Otros':
-                            icon = Icons.category;
-                            break;
-                          default:
-                            icon = Icons
-                                .all_inclusive; 
-                            break;
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            children: [
-                              IconButton(
-                                icon: Icon(icon,
-                                    color: Color.fromARGB(
-                                        255, 255, 211, 0)), // Color amarillo
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedCategory = category;
-                                  });
-                                  _filterByCategory(
-                                      category); // Filtrar productos
-                                },
-                              ),
-                              Text(
-                                category,
-                                style: TextStyle(
-                                  color: Color.fromARGB(
-                                      255, 255, 211, 0), // Letra amarilla
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                ],
+            child: AppBar(
+              backgroundColor: Color.fromARGB(255, 33, 46, 127),
+              title: const Text(
+                'Pumitas Emprendedores',
+                style: TextStyle(
+                    color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
               ),
-            ),
-            actions: [
-              _currentUser != null
-                  ? Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                                context, MyRoutes.PerfilPersonal.name);
-                          },
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundImage:
-                                    NetworkImage(_currentUser!.logo),
-                                radius: 20,
-                                backgroundColor: Color.fromARGB(
-                                    255, 255, 211, 0), // Borde amarillo
-                              ),
-                              const SizedBox(width: 10),
-                            ],
-                          ),
+              flexibleSpace: Padding(
+                padding:
+                    const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Barra de búsqueda
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(0, 22, 11, 11),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Color.fromARGB(
+                              255, 255, 211, 0), // Detalle en amarillo
+                          width: 2.0,
                         ),
-                      ],
-                    )
-                  : IconButton(
-                      icon: const Icon(
-                        Icons.login,
-                        color:
-                            Color.fromARGB(255, 255, 211, 0), // Ícono amarillo
                       ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, MyRoutes.Login.name);
-                      },
+                      child: TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: 'Buscar producto...',
+                          hintStyle: TextStyle(
+                            color: Color.fromARGB(
+                                255, 255, 211, 0), // Letra amarilla
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color.fromARGB(255, 255, 211, 0),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none, // Sin borde visible
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0, horizontal: 20),
+                        ),
+                        onChanged: (value) {
+                          _searchProducts(
+                              value); // Método para buscar productos
+                        },
+                      ),
                     ),
-            ],
+                    const SizedBox(height: 5),
+                    //  categorias
+                    Container(
+                      height:
+                          80, // Ajusta la altura del contenedor si lo necesitas
+                      child: ListView.builder(
+                        scrollDirection:
+                            Axis.horizontal, // Para hacer que sea horizontal
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          String category = _categories[index];
+                          IconData icon;
+
+                          // Asignar íconos dependiendo de la categoría
+                          switch (category) {
+                            case 'Ropa':
+                              icon = Icons.shopping_bag;
+                              break;
+                            case 'Accesorios':
+                              icon = Icons.watch;
+                              break;
+                            case 'Alimentos':
+                              icon = Icons.fastfood;
+                              break;
+                            case 'Salud y belleza':
+                              icon = Icons.favorite;
+                              break;
+                            case 'Arreglos y regalos':
+                              icon = Icons.cake;
+                              break;
+                            case 'Deportes':
+                              icon = Icons.sports_soccer;
+                              break;
+                            case 'Tecnologia':
+                              icon = Icons.devices;
+                              break;
+                            case 'Mascotas':
+                              icon = Icons.pets;
+                              break;
+                            case 'Juegos':
+                              icon = Icons.videogame_asset;
+                              break;
+                            case 'Libros':
+                              icon = Icons.book;
+                              break;
+                            case 'Arte':
+                              icon = Icons.palette;
+                              break;
+                            case 'Otros':
+                              icon = Icons.category;
+                              break;
+                            default:
+                              icon = Icons.all_inclusive;
+                              break;
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              children: [
+                                IconButton(
+                                  icon: Icon(icon,
+                                      color: Color.fromARGB(
+                                          255, 255, 211, 0)), // Color amarillo
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedCategory = category;
+                                    });
+                                    _filterByCategory(
+                                        category); // Filtrar productos
+                                  },
+                                ),
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    color: Color.fromARGB(
+                                        255, 255, 211, 0), // Letra amarilla
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+              actions: [
+                _currentUser != null
+                    ? Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, MyRoutes.PerfilPersonal.name);
+                            },
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(_currentUser!.logo),
+                                  radius: 20,
+                                  backgroundColor: Color.fromARGB(
+                                      255, 255, 211, 0), // Borde amarillo
+                                ),
+                                const SizedBox(width: 10),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.login,
+                          color: Color.fromARGB(
+                              255, 255, 211, 0), // Ícono amarillo
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, MyRoutes.Login.name);
+                        },
+                      ),
+              ],
+            ),
           ),
         ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _buildProductList(),
+        body: Stack(children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
+            ),
           ),
-        ],
-      ),
-    );
+          Column(
+            children: [
+              Expanded(
+                child: _buildProductList(),
+              ),
+            ],
+          ),
+        ]));
   }
 
   Widget _buildProductList() {
@@ -374,3 +381,207 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 }
+/*
+Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(200.0),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft:
+                  Radius.circular(40.0), // Borde inferior izquierdo redondeado
+              bottomRight:
+                  Radius.circular(40.0), // Borde inferior derecho redondeado
+            ),
+            child: AppBar(
+              backgroundColor: Color.fromARGB(255, 33, 46, 127),
+              title: const Text(
+                'Pumitas Emprendedores',
+                style: TextStyle(
+                    color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
+              ),
+              flexibleSpace: Padding(
+                padding:
+                    const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Barra de búsqueda
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(0, 22, 11, 11),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Color.fromARGB(
+                              255, 255, 211, 0), // Detalle en amarillo
+                          width: 2.0,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: 'Buscar producto...',
+                          hintStyle: TextStyle(
+                            color: Color.fromARGB(
+                                255, 255, 211, 0), // Letra amarilla
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color.fromARGB(255, 255, 211, 0),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none, // Sin borde visible
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0, horizontal: 20),
+                        ),
+                        onChanged: (value) {
+                          _searchProducts(
+                              value); // Método para buscar productos
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    //  categorias
+                    Container(
+                      height:
+                          80, // Ajusta la altura del contenedor si lo necesitas
+                      child: ListView.builder(
+                        scrollDirection:
+                            Axis.horizontal, // Para hacer que sea horizontal
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          String category = _categories[index];
+                          IconData icon;
+
+                          // Asignar íconos dependiendo de la categoría
+                          switch (category) {
+                            case 'Ropa':
+                              icon = Icons.shopping_bag;
+                              break;
+                            case 'Accesorios':
+                              icon = Icons.watch;
+                              break;
+                            case 'Alimentos':
+                              icon = Icons.fastfood;
+                              break;
+                            case 'Salud y belleza':
+                              icon = Icons.favorite;
+                              break;
+                            case 'Arreglos y regalos':
+                              icon = Icons.cake;
+                              break;
+                            case 'Deportes':
+                              icon = Icons.sports_soccer;
+                              break;
+                            case 'Tecnologia':
+                              icon = Icons.devices;
+                              break;
+                            case 'Mascotas':
+                              icon = Icons.pets;
+                              break;
+                            case 'Juegos':
+                              icon = Icons.videogame_asset;
+                              break;
+                            case 'Libros':
+                              icon = Icons.book;
+                              break;
+                            case 'Arte':
+                              icon = Icons.palette;
+                              break;
+                            case 'Otros':
+                              icon = Icons.category;
+                              break;
+                            default:
+                              icon = Icons.all_inclusive;
+                              break;
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              children: [
+                                IconButton(
+                                  icon: Icon(icon,
+                                      color: Color.fromARGB(
+                                          255, 255, 211, 0)), // Color amarillo
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedCategory = category;
+                                    });
+                                    _filterByCategory(
+                                        category); // Filtrar productos
+                                  },
+                                ),
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    color: Color.fromARGB(
+                                        255, 255, 211, 0), // Letra amarilla
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+              actions: [
+                _currentUser != null
+                    ? Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, MyRoutes.PerfilPersonal.name);
+                            },
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(_currentUser!.logo),
+                                  radius: 20,
+                                  backgroundColor: Color.fromARGB(
+                                      255, 255, 211, 0), // Borde amarillo
+                                ),
+                                const SizedBox(width: 10),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.login,
+                          color: Color.fromARGB(
+                              255, 255, 211, 0), // Ícono amarillo
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, MyRoutes.Login.name);
+                        },
+                      ),
+              ],
+            ),
+          ),
+        ),
+        body: Stack(children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
+            ),
+          ),
+          Column(
+            children: [
+              Expanded(
+                child: _buildProductList(),
+              ),
+            ],
+          ),
+        ]));
+ */

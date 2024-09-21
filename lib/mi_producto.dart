@@ -20,7 +20,7 @@ class MiProductoPage extends StatefulWidget {
     required this.sellerId,
     Key? key,
   }) : super(key: key);
-  
+
   get productId => null;
 
   @override
@@ -32,6 +32,8 @@ class _MiProductoPageState extends State<MiProductoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Text(widget.name),
         actions: [
           IconButton(
@@ -102,20 +104,20 @@ class _MiProductoPageState extends State<MiProductoPage> {
   }
 
   Future<void> _deleteProduct() async {
-    
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Eliminar Producto'),
-          content: const Text('¿Estás seguro que deseas eliminar este producto?'),
+          content:
+              const Text('¿Estás seguro que deseas eliminar este producto?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), 
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), 
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),
           ],
@@ -123,7 +125,6 @@ class _MiProductoPageState extends State<MiProductoPage> {
       },
     );
 
-    
     if (confirmDelete) {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -143,22 +144,18 @@ class _MiProductoPageState extends State<MiProductoPage> {
             const SnackBar(content: Text('Producto borrado con éxito')),
           );
 
-Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MisProductos(
-                    ),
-                  ),
-                );
-         
-         
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MisProductos(),
+            ),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Producto no encontrado')),
           );
         }
       } catch (e) {
-       
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al eliminar el producto: $e')),
         );

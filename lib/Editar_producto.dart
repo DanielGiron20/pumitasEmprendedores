@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   late TextEditingController _priceController;
   late TextEditingController _categoryController;
   String? _selectedCategory;
-  File? _imageFile; 
+  File? _imageFile;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     _priceController = TextEditingController(text: widget.price.toString());
     _categoryController = TextEditingController(text: widget.category);
     _selectedCategory = widget.category;
-    print(widget.category);  
+    print(widget.category);
   }
 
   @override
@@ -86,8 +87,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   }
 
   Future<void> _saveChanges() async {
-
-     bool confirmDelete = await showDialog(
+    bool confirmDelete = await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -95,11 +95,11 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           content: const Text('¿Estás seguro que deseas editar este producto?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), 
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), 
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),
           ],
@@ -107,55 +107,55 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
       },
     );
 
-    if(confirmDelete == true) {
-       if (_formKey.currentState!.validate()) {
-      try {
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
+    if (confirmDelete == true) {
+      if (_formKey.currentState!.validate()) {
+        try {
+          FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-        String? newImageUrl = widget.image;
+          String? newImageUrl = widget.image;
 
-        if (_imageFile != null) {
-          newImageUrl = await _uploadImage(_imageFile!);
-        }
+          if (_imageFile != null) {
+            newImageUrl = await _uploadImage(_imageFile!);
+          }
 
-        QuerySnapshot productQuery = await firestore
-            .collection('products')
-            .where('name', isEqualTo: widget.name)
-            .where('description', isEqualTo: widget.description)
-            .where('price', isEqualTo: widget.price)
-            .where('category', isEqualTo: widget.category)
-            .get();
+          QuerySnapshot productQuery = await firestore
+              .collection('products')
+              .where('name', isEqualTo: widget.name)
+              .where('description', isEqualTo: widget.description)
+              .where('price', isEqualTo: widget.price)
+              .where('category', isEqualTo: widget.category)
+              .get();
 
-        if (productQuery.docs.isNotEmpty) {
-          String documentId = productQuery.docs.first.id;
-    
-          await firestore.collection('products').doc(documentId).update({
-            'name': _nameController.text,
-            'description': _descriptionController.text,
-            'price': double.parse(_priceController.text),
-            'category': _selectedCategory,
-            'image': newImageUrl,
-          });
+          if (productQuery.docs.isNotEmpty) {
+            String documentId = productQuery.docs.first.id;
 
+            await firestore.collection('products').doc(documentId).update({
+              'name': _nameController.text,
+              'description': _descriptionController.text,
+              'price': double.parse(_priceController.text),
+              'category': _selectedCategory,
+              'image': newImageUrl,
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Producto actualizado con éxito')),
+            );
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MisProductos(),
+              ),
+            );
+          } else {
+            print("No se encontro el producto");
+          }
+        } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Producto actualizado con éxito')),
+            SnackBar(content: Text('Error al actualizar el producto: $e')),
           );
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MisProductos(),
-            ),
-          );
-        } else {
-          print("No se encontro el producto");
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al actualizar el producto: $e')),
-        );
       }
-     }
     }
   }
 
@@ -163,6 +163,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: const Text('Editar Producto'),
       ),
       body: Padding(
@@ -192,16 +194,17 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 icono: Icons.store,
                 show: false,
               ),
-              /* const SizedBox(height: 20),
+              const SizedBox(height: 20),
               CustomInputs(
+                controller: _categoryController,
                 validator: (valor) {
-                  if (valor == null || valor.isEmpty) {
+                  if (_selectedCategory == null || _selectedCategory!.isEmpty) {
                     return 'La categoría es obligatoria';
                   }
                   return null;
                 },
                 teclado: TextInputType.text,
-                hint: 'Ingrese la categoría del producto',
+                hint: 'Seleccione la categoría del producto',
                 nombrelabel: 'Categoría',
                 icono: Icons.category,
                 show: false,
@@ -218,56 +221,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   'Libros',
                   'Arte',
                   'Otros'
-                ],
-                controller:  _categoryController,
+                ], // Lista de opciones para el Dropdown
               ),
-
-              */
-              
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: _selectedCategory, 
-                decoration: InputDecoration(
-                  labelText: _selectedCategory,
-                  icon: Icon(Icons.category),
-                ),
-                items: [
-                  'Ropa',
-                  'Accesorios',
-                  'Alimentos',
-                  'Salud y belleza',
-                  'Arreglos y regalos',
-                  'Deportes',
-                  'Tecnologia',
-                  'Mascotas',
-                  'Juegos',
-                  'Libros',
-                  'Arte',
-                  'Otros'
-                ].map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
-                validator: (valor) {
-                  if (valor == null || valor.isEmpty) {
-                    return 'La categoría es obligatoria';
-                  }
-                  return null;
-                },
-              ),
-
-
-
-
-
-
               const SizedBox(height: 20),
               CustomInputs(
                 controller: _descriptionController,

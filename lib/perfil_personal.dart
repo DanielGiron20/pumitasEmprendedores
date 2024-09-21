@@ -23,8 +23,6 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
     _loadUser();
   }
 
-
-
   Future<void> _loadUser() async {
     try {
       List<Usuario> usuarios = await DBHelper.queryUsuarios();
@@ -43,7 +41,7 @@ class _PerfilPersonalState extends State<PerfilPersonal> {
   }
 
   Future<void> _logout() async {
-bool confirmDelete = await showDialog(
+    bool confirmDelete = await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -51,48 +49,44 @@ bool confirmDelete = await showDialog(
           content: const Text('¿Estás seguro que desea cerrar sesion?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), 
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
-              
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), 
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
-              
             ),
           ],
         );
       },
     );
 
-    if(confirmDelete == true)
-    {
-try {
-      List<Usuario> usuarios = await DBHelper.queryUsuarios();
-      if (usuarios.isNotEmpty) {
-        Usuario userToDelete = usuarios.first;
-        await DBHelper.deleteUsuario(userToDelete);
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          MyRoutes.PantallaPrincipal.name,
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        print("No hay usuarios disponibles para eliminar.");
+    if (confirmDelete == true) {
+      try {
+        List<Usuario> usuarios = await DBHelper.queryUsuarios();
+        if (usuarios.isNotEmpty) {
+          Usuario userToDelete = usuarios.first;
+          await DBHelper.deleteUsuario(userToDelete);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            MyRoutes.PantallaPrincipal.name,
+            (Route<dynamic> route) => false,
+          );
+        } else {
+          print("No hay usuarios disponibles para eliminar.");
+        }
+      } catch (e) {
+        print("Error al eliminar el usuario: $e");
       }
-    } catch (e) {
-      print("Error al eliminar el usuario: $e");
     }
-
-
-    }
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: const Text('Perfil Personal'),
         centerTitle: true,
       ),
@@ -138,7 +132,7 @@ try {
                                 _currentUser!.description,
                                 style: const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey,
+                                  color: Colors.black,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -186,16 +180,15 @@ try {
                         CustomButton(
                           label: 'Editar Perfil',
                           backgroundColor:
-                              const Color.fromARGB(255, 57, 57, 57),
-                          textColor: Colors.white, // Texto blanco
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
                           icon: Icons.add,
                           onPressed: () {
-                          Navigator.of(context).pushReplacement(
-  MaterialPageRoute(
-    builder: (context) => EditarPerfilPage(),
-  ),
-);
-
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => EditarPerfilPage(),
+                              ),
+                            );
                           },
                         ),
 
@@ -205,8 +198,8 @@ try {
                         CustomButton(
                           label: 'Agregar Producto',
                           backgroundColor:
-                              const Color.fromARGB(255, 57, 57, 57),
-                          textColor: Colors.white, // Texto blanco
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
                           icon: Icons.add,
                           onPressed: () {
                             Navigator.pushNamed(
@@ -223,8 +216,8 @@ try {
                         CustomButton(
                           label: 'Ver mis productos',
                           backgroundColor:
-                              const Color.fromARGB(255, 57, 57, 57),
-                          textColor: Colors.white,
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
                           icon: Icons.list,
                           onPressed: () {
                             Navigator.pushNamed(
@@ -239,8 +232,8 @@ try {
                         CustomButton(
                           label: 'Cerrar Sesión',
                           backgroundColor:
-                              const Color.fromARGB(255, 57, 57, 57),
-                          textColor: Colors.white,
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
                           icon: Icons.logout,
                           onPressed: _logout, // Función para cerrar sesión
                         ),

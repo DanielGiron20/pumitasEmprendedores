@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pumitas_emprendedores/DetallesCortosProducto.dart';
+import 'package:pumitas_emprendedores/wigets/background_painter.dart';
 import 'package:pumitas_emprendedores/wigets/product_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -34,161 +35,174 @@ class ProductosVendedorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Productos del vendedor"),
-      ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: _getSellerInfo(),
-        builder: (context, sellerSnapshot) {
-          if (sellerSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        appBar: AppBar(
+          title: const Text("Productos del vendedor"),
+          backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+          foregroundColor: const Color.fromARGB(255, 255, 211, 0),
+        ),
+        body: Stack(children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
+            ),
+          ),
+          FutureBuilder<DocumentSnapshot>(
+            future: _getSellerInfo(),
+            builder: (context, sellerSnapshot) {
+              if (sellerSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (sellerSnapshot.hasData && sellerSnapshot.data != null) {
-            var sellerData = sellerSnapshot.data!;
+              if (sellerSnapshot.hasData && sellerSnapshot.data != null) {
+                var sellerData = sellerSnapshot.data!;
 
-            return SingleChildScrollView(
-              // Hace todo el contenido scroleable
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(sellerData['logo']),
-                          radius: 40,
+                return SingleChildScrollView(
+                  // Hace todo el contenido scroleable
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(sellerData['logo']),
+                              radius: 40,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              sellerData['name'],
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              sellerData['description'] ?? 'Sin descripción',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (sellerData['whatsapp'] != null)
+                                  IconButton(
+                                    icon: const FaIcon(
+                                        FontAwesomeIcons.whatsapp,
+                                        color: Colors.green),
+                                    onPressed: () {
+                                      final whatsappUrl =
+                                          'https://wa.me/${sellerData['whatsapp']}?text=Hola!';
+                                      _launchUrl(whatsappUrl);
+                                    },
+                                  ),
+                                const SizedBox(width: 20),
+                                if (sellerData['instagram'] != null)
+                                  IconButton(
+                                    icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        color: Colors.purple),
+                                    onPressed: () {
+                                      final instagramUrl =
+                                          'https://www.instagram.com/${sellerData['instagram']}/';
+                                      _launchUrl(instagramUrl);
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          sellerData['name'],
-                          style: const TextStyle(
-                            fontSize: 18,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Productos del vendedor',
+                          style: TextStyle(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          sellerData['description'] ?? 'Sin descripción',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (sellerData['whatsapp'] != null)
-                              IconButton(
-                                icon: const FaIcon(FontAwesomeIcons.whatsapp,
-                                    color: Colors.green),
-                                onPressed: () {
-                                  final whatsappUrl =
-                                      'https://wa.me/${sellerData['whatsapp']}?text=Hola!';
-                                  _launchUrl(whatsappUrl);
-                                },
-                              ),
-                            const SizedBox(width: 20),
-                            if (sellerData['instagram'] != null)
-                              IconButton(
-                                icon: const FaIcon(FontAwesomeIcons.instagram,
-                                    color: Colors.purple),
-                                onPressed: () {
-                                  final instagramUrl =
-                                      'https://www.instagram.com/${sellerData['instagram']}/';
-                                  _launchUrl(instagramUrl);
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Productos del vendedor',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ),
-                  const Divider(),
-                  FutureBuilder<QuerySnapshot>(
-                    future: _getSellerProducts(),
-                    builder: (context, productsSnapshot) {
-                      if (productsSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                      const Divider(),
+                      FutureBuilder<QuerySnapshot>(
+                        future: _getSellerProducts(),
+                        builder: (context, productsSnapshot) {
+                          if (productsSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
-                      if (productsSnapshot.hasData &&
-                          productsSnapshot.data != null) {
-                        var products = productsSnapshot.data!.docs;
+                          if (productsSnapshot.hasData &&
+                              productsSnapshot.data != null) {
+                            var products = productsSnapshot.data!.docs;
 
-                        if (products.isEmpty) {
-                          return const Center(
-                              child: Text('Este vendedor no tiene productos.'));
-                        }
+                            if (products.isEmpty) {
+                              return const Center(
+                                  child: Text(
+                                      'Este vendedor no tiene productos.'));
+                            }
 
-                        return GridView.builder(
-                          shrinkWrap:
-                              true, // Esto permite que el GridView se ajuste al contenido
-                          physics:
-                              const NeverScrollableScrollPhysics(), // El GridView no maneja su propio scroll
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Número de columnas
-                            crossAxisSpacing:
-                                8, // Espacio horizontal entre tarjetas
-                            mainAxisSpacing:
-                                8, // Espacio vertical entre tarjetas
-                            childAspectRatio:
-                                0.71, // Relación de aspecto de las tarjetas
-                          ),
-                          itemCount: products.length,
-                          itemBuilder: (context, index) {
-                            var product = products[index];
-
-                            return FadeInUp(
-                              duration:
-                                  Duration(milliseconds: 250 + index * 200),
-                              child: ProductCard(
-                                name: product['name'],
-                                description: product['description'],
-                                image: product['image'],
-                                price: product['price'],
-                                sellerId: product['sellerId'],
-                                sellerName: sellerData['name'],
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProductDetailPage(
-                                        productId: product
-                                            .id, // Pasamos el ID del producto
-                                      ),
-                                    ),
-                                  );
-                                },
+                            return GridView.builder(
+                              shrinkWrap:
+                                  true, // Esto permite que el GridView se ajuste al contenido
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // El GridView no maneja su propio scroll
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2, // Número de columnas
+                                crossAxisSpacing:
+                                    8, // Espacio horizontal entre tarjetas
+                                mainAxisSpacing:
+                                    8, // Espacio vertical entre tarjetas
+                                childAspectRatio:
+                                    0.71, // Relación de aspecto de las tarjetas
                               ),
+                              itemCount: products.length,
+                              itemBuilder: (context, index) {
+                                var product = products[index];
+
+                                return FadeInUp(
+                                  duration:
+                                      Duration(milliseconds: 250 + index * 200),
+                                  child: ProductCard(
+                                    name: product['name'],
+                                    description: product['description'],
+                                    image: product['image'],
+                                    price: product['price'],
+                                    sellerId: product['sellerId'],
+                                    sellerName: sellerData['name'],
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProductDetailPage(
+                                            productId: product
+                                                .id, // Pasamos el ID del producto
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      }
+                          }
 
-                      return const Center(
-                          child: Text('No hay productos disponibles.'));
-                    },
+                          return const Center(
+                              child: Text('No hay productos disponibles.'));
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return const Center(
-              child: Text('Error al cargar datos del vendedor.'));
-        },
-      ),
-    );
+              return const Center(
+                  child: Text('Error al cargar datos del vendedor.'));
+            },
+          ),
+        ]));
   }
 }

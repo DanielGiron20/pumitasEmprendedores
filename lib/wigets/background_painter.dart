@@ -17,7 +17,7 @@ class BackgroundPainter extends CustomPainter {
     paint.color = const Color.fromARGB(255, 33, 46, 127);
     var path = Path();
     path.moveTo(0, size.height);
-    path.lineTo(size.width, size.height * 0.5);
+    path.lineTo(size.width, size.height * 0.9);
     path.lineTo(size.width, size.height);
     path.close();
     canvas.drawPath(path, paint);
@@ -27,7 +27,7 @@ class BackgroundPainter extends CustomPainter {
     path = Path();
     path.moveTo(0, size.height); // Esquina inferior izquierda
     path.lineTo(
-        size.width, size.height * 0.75); // Comienza donde termina el azul
+        size.width, size.height * 0.95); // Comienza donde termina el azul
     path.lineTo(size.width, size.height); // Esquina inferior derecha
     path.close();
     canvas.drawPath(path, paint);

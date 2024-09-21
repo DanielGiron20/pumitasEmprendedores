@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
+import 'package:pumitas_emprendedores/wigets/background_painter.dart';
+import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class EditarPerfilPage extends StatefulWidget {
   EditarPerfilPage({Key? key}) : super(key: key);
@@ -95,21 +98,20 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   }
 
   Future<void> _saveProfileChanges() async {
-
-    
-     bool confirmDelete = await showDialog(
+    bool confirmDelete = await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Editar Perfil'),
-          content: const Text('¿Estás seguro que desea guardar estos cambios en su perfil?'),
+          content: const Text(
+              '¿Estás seguro que desea guardar estos cambios en su perfil?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), 
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), 
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),
           ],
@@ -117,130 +119,174 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
       },
     );
 
-    if(confirmDelete == true) {
-if (_formKey.currentState!.validate()) {
-      try {
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
+    if (confirmDelete == true) {
+      if (_formKey.currentState!.validate()) {
+        try {
+          FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-        String? newImageUrl = _currentUser?.logo;
-        if (_imageFile != null) {
-          newImageUrl = await _uploadImage(_imageFile!);
+          String? newImageUrl = _currentUser?.logo;
+          if (_imageFile != null) {
+            newImageUrl = await _uploadImage(_imageFile!);
+          }
+
+          // Actualiza en Firebase
+          await firestore.collection('sellers').doc(_currentUser!.id).update({
+            'name': _userNameController.text,
+            'whatsapp': _whatsappController.text,
+            'logo': newImageUrl,
+            'instagram': _instagramController.text,
+            'description': _descripcionController.text,
+          });
+
+          // Actualiza en la base de datos local usando el UsuarioController
+          final usuarioController = UsuarioController();
+          await usuarioController.updateUsuario(_currentUser!.id, {
+            'name': _userNameController.text,
+            'email': _currentUser!.email.toString(),
+            'description': _descripcionController.text,
+            'instagram': _instagramController.text,
+            'whatsapp': _whatsappController.text,
+            'password': _currentUser!.password.toString(),
+            'logo': newImageUrl.toString(),
+            'sede': _currentUser!.sede.toString(),
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Perfil actualizado con éxito')),
+          );
+          Navigator.pop(context);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al actualizar el perfil: $e')),
+          );
         }
-
-        // Actualiza en Firebase
-        await firestore.collection('sellers').doc(_currentUser!.id).update({
-          'name': _userNameController.text,
-          'whatsapp': _whatsappController.text,
-          'logo': newImageUrl,
-          'instagram': _instagramController.text,
-          'description': _descripcionController.text,
-        });
-
-        // Actualiza en la base de datos local usando el UsuarioController
-        final usuarioController = UsuarioController();
-        await usuarioController.updateUsuario(_currentUser!.id, {
-          'name': _userNameController.text,
-          'email': _currentUser!.email.toString(),
-          'description': _descripcionController.text,
-          'instagram': _instagramController.text,
-          'whatsapp': _whatsappController.text,
-          'password': _currentUser!.password.toString(),
-          'logo': newImageUrl.toString(),
-          'sede': _currentUser!.sede.toString(),
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil actualizado con éxito')),
-        );
-        Navigator.pop(context);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al actualizar el perfil: $e')),
-        );
       }
     }
-
-
-    }
-    
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Perfil'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _currentUser == null
-            ? const Center(child: CircularProgressIndicator())
-            : Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    _imageFile == null
-                        ? Image.network(_currentUser!.logo, height: 200)
-                        : Image.file(_imageFile!, height: 200),
-                    TextButton(
-                      onPressed: _pickImage,
-                      child: const Text('Seleccionar Imagen'),
+        appBar: AppBar(
+          backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+          foregroundColor: const Color.fromARGB(255, 255, 211, 0),
+          title: const Text('Editar Perfil'),
+        ),
+        body: Stack(children: [
+          // Fondo pintado personalizado
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _currentUser == null
+                ? const Center(child: CircularProgressIndicator())
+                : Form(
+                    key: _formKey,
+                    child: ListView(
+                      children: [
+                        _imageFile == null
+                            ? CircleAvatar(
+                                radius: 80,
+                                backgroundImage:
+                                    NetworkImage(_currentUser!.logo),
+                              )
+                            : CircleAvatar(
+                                radius: 80,
+                                backgroundImage: FileImage(_imageFile!),
+                              ),
+                        const SizedBox(height: 20),
+                        TextButton.icon(
+                          onPressed: _pickImage,
+                          icon: const Icon(Icons.image,
+                              color: Color.fromARGB(255, 255, 211, 0)),
+                          label: const Text(
+                            'Seleccionar Imagen',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 33, 46, 127)),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        CustomInputs(
+                          controller: _userNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'El nombre de usuario es obligatorio';
+                            }
+                            return null;
+                          },
+                          teclado: TextInputType.text,
+                          hint: 'Introduce tu nombre',
+                          nombrelabel: 'Nombre de Usuario',
+                          icono: Icons.person,
+                          show: false,
+                        ),
+                        const SizedBox(height: 20),
+                        CustomInputs(
+                          controller: _descripcionController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'La descripción es obligatoria';
+                            }
+                            return null;
+                          },
+                          teclado: TextInputType.text,
+                          hint: 'Introduce una descripción',
+                          nombrelabel: 'Descripción',
+                          icono: Icons.description,
+                          show: false,
+                        ),
+                        const SizedBox(height: 20),
+                        CustomInputs(
+                          controller: _whatsappController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'El whatsapp es obligatorio';
+                            }
+                            return null;
+                          },
+                          teclado: TextInputType.phone,
+                          hint: 'Introduce tu número de WhatsApp',
+                          nombrelabel: 'Whatsapp',
+                          icono: Icons.phone,
+                          show: false,
+                        ),
+                        const SizedBox(height: 20),
+                        CustomInputs(
+                          controller: _instagramController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'El Instagram es obligatorio';
+                            }
+                            return null;
+                          },
+                          teclado: TextInputType.text,
+                          hint: 'Introduce tu perfil de Instagram',
+                          nombrelabel: 'Instagram',
+                          icono: Icons.camera_alt,
+                          show: false,
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 33, 46, 127),
+                            foregroundColor:
+                                const Color.fromARGB(255, 255, 211, 0),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _saveProfileChanges,
+                          child: const Text('Guardar cambios'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _userNameController,
-                      decoration:
-                          const InputDecoration(labelText: 'Nombre de Usuario'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El nombre de usuario es obligatorio';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _descripcionController,
-                      decoration:
-                          const InputDecoration(labelText: 'Descripción'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'La descripción es obligatoria';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _whatsappController,
-                      decoration: const InputDecoration(labelText: 'Whatsapp'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El whatsapp es obligatorio';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _instagramController,
-                      decoration: const InputDecoration(labelText: 'Instagram'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El instagram es obligatorio';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _saveProfileChanges,
-                      child: const Text('Guardar cambios'),
-                    ),
-                  ],
-                ),
-              ),
-      ),
-    );
+                  ),
+          ),
+        ]));
   }
 }
