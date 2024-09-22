@@ -270,7 +270,6 @@ class _AgregarProductoState extends State<AgregarProducto> {
                                 ? const Center(
                                     child: Text('Selecciona una imagen'))
                                 : Image.file(_imagenFile!),
-                               
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -280,7 +279,8 @@ class _AgregarProductoState extends State<AgregarProducto> {
                               if (_imagenFile == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Debe seleccionar una imagen'),
+                                    content:
+                                        Text('Debe seleccionar una imagen'),
                                     backgroundColor: Colors.red,
                                   ),
                                 );

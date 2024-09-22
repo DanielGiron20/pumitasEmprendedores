@@ -21,6 +21,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   List<Map<String, dynamic>> _allProducts = [];
   final TextEditingController controller = TextEditingController();
   String? _selectedCategory;
+  int _selectedCategoryIndex = 0;
   List<String> _categories = [
     'Todos',
     'Ropa',
@@ -110,207 +111,304 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(200.0),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft:
-                  Radius.circular(40.0), // Borde inferior izquierdo redondeado
-              bottomRight:
-                  Radius.circular(40.0), // Borde inferior derecho redondeado
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: Image.asset(
+              'assets/PumitasEmprendedoresAppbar1.png',
+              height: 50,
+              fit: BoxFit.contain, // O cualquier ajuste que necesites
             ),
-            child: AppBar(
-              backgroundColor: Color.fromARGB(255, 33, 46, 127),
-              title: const Text(
-                'Pumitas Emprendedores',
-                style: TextStyle(
-                    color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
-              ),
-              flexibleSpace: Padding(
-                padding:
-                    const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+          ),
+        ),
+        actions: [
+          _currentUser != null
+              ? Row(
                   children: [
-                    // Barra de búsqueda
-                    Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(0, 22, 11, 11),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: Color.fromARGB(
-                              255, 255, 211, 0), // Detalle en amarillo
-                          width: 2.0,
-                        ),
-                      ),
-                      child: TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar producto...',
-                          hintStyle: TextStyle(
-                            color: Color.fromARGB(
-                                255, 255, 211, 0), // Letra amarilla
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                            context, MyRoutes.PerfilPersonal.name);
+                      },
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(_currentUser!.logo),
+                            radius: 20,
+                            backgroundColor: const Color.fromARGB(
+                                255, 255, 211, 0), // Borde amarillo
                           ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Color.fromARGB(255, 255, 211, 0),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide.none, // Sin borde visible
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 20),
-                        ),
-                        onChanged: (value) {
-                          _searchProducts(
-                              value); // Método para buscar productos
-                        },
+                          const SizedBox(width: 10),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    //  categorias
-                    Container(
-                      height:
-                          80, // Ajusta la altura del contenedor si lo necesitas
-                      child: ListView.builder(
-                        scrollDirection:
-                            Axis.horizontal, // Para hacer que sea horizontal
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          String category = _categories[index];
-                          IconData icon;
+                  ],
+                )
+              : IconButton(
+                  icon: const Icon(
+                    Icons.login,
+                    color: Color.fromARGB(255, 255, 211, 0), // Ícono amarillo
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, MyRoutes.Login.name);
+                  },
+                ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter:
+                  BackgroundPainter(), // Tu clase personalizada para el fondo
+            ),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(40.0),
+                    bottomRight: Radius.circular(40.0),
+                  ),
+                  child: Container(
+                    color: const Color.fromARGB(
+                        255, 33, 46, 127), // Color del "AppBar"
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    height: 150.0, // Tamaño total del "AppBar"
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        // Barra de búsqueda
+                        Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(0, 22, 11, 11),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(
+                              color: const Color.fromARGB(255, 255, 211, 0),
+                              width: 2.0, // Detalle en amarillo
+                            ),
+                          ),
+                          child: TextField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                              hintText: 'Buscar producto...',
+                              hintStyle: const TextStyle(
+                                color: Color.fromARGB(
+                                    255, 255, 211, 0), // Letra amarilla
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Color.fromARGB(255, 255, 211, 0),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0, horizontal: 20),
+                            ),
+                            onChanged: (value) {
+                              _searchProducts(value);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Container(
+                          height: 80,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _categories.length,
+                            itemBuilder: (context, index) {
+                              String category = _categories[index];
+                              IconData icon;
 
-                          // Asignar íconos dependiendo de la categoría
-                          switch (category) {
-                            case 'Ropa':
-                              icon = Icons.shopping_bag;
-                              break;
-                            case 'Accesorios':
-                              icon = Icons.watch;
-                              break;
-                            case 'Alimentos':
-                              icon = Icons.fastfood;
-                              break;
-                            case 'Salud y belleza':
-                              icon = Icons.favorite;
-                              break;
-                            case 'Arreglos y regalos':
-                              icon = Icons.cake;
-                              break;
-                            case 'Deportes':
-                              icon = Icons.sports_soccer;
-                              break;
-                            case 'Tecnologia':
-                              icon = Icons.devices;
-                              break;
-                            case 'Mascotas':
-                              icon = Icons.pets;
-                              break;
-                            case 'Juegos':
-                              icon = Icons.videogame_asset;
-                              break;
-                            case 'Libros':
-                              icon = Icons.book;
-                              break;
-                            case 'Arte':
-                              icon = Icons.palette;
-                              break;
-                            case 'Otros':
-                              icon = Icons.category;
-                              break;
-                            default:
-                              icon = Icons.all_inclusive;
-                              break;
-                          }
+                              // Asignar íconos dependiendo de la categoría
+                              switch (category) {
+                                case 'Ropa':
+                                  icon = Icons.shopping_bag;
+                                  break;
+                                case 'Accesorios':
+                                  icon = Icons.watch;
+                                  break;
+                                case 'Alimentos':
+                                  icon = Icons.fastfood;
+                                  break;
+                                case 'Salud y belleza':
+                                  icon = Icons.favorite;
+                                  break;
+                                case 'Arreglos y regalos':
+                                  icon = Icons.cake;
+                                  break;
+                                case 'Deportes':
+                                  icon = Icons.sports_soccer;
+                                  break;
+                                case 'Tecnologia':
+                                  icon = Icons.devices;
+                                  break;
+                                case 'Mascotas':
+                                  icon = Icons.pets;
+                                  break;
+                                case 'Juegos':
+                                  icon = Icons.videogame_asset;
+                                  break;
+                                case 'Libros':
+                                  icon = Icons.book;
+                                  break;
+                                case 'Arte':
+                                  icon = Icons.palette;
+                                  break;
+                                case 'Otros':
+                                  icon = Icons.category;
+                                  break;
+                                default:
+                                  icon = Icons.all_inclusive;
+                                  break;
+                              }
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Column(
-                              children: [
-                                IconButton(
-                                  icon: Icon(icon,
-                                      color: Color.fromARGB(
-                                          255, 255, 211, 0)), // Color amarillo
-                                  onPressed: () {
+                              // Verificar si la categoría actual está seleccionada
+                              bool isSelected = _selectedCategoryIndex == index;
+
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: GestureDetector(
+                                  onTap: () {
                                     setState(() {
+                                      _selectedCategoryIndex =
+                                          index; // Actualiza la categoría seleccionada
                                       _selectedCategory = category;
                                     });
                                     _filterByCategory(
                                         category); // Filtrar productos
                                   },
-                                ),
-                                Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: Color.fromARGB(
-                                        255, 255, 211, 0), // Letra amarilla
+                                  child: Column(
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: Duration(milliseconds: 300),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Color.fromARGB(255, 255, 211, 0)
+                                              : Colors
+                                                  .transparent, // Fondo amarillo para categoría seleccionada
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          icon,
+                                          color: isSelected
+                                              ? Color.fromARGB(255, 33, 46, 127)
+                                              : Color.fromARGB(
+                                                  255, 255, 211, 0),
+                                        ),
+                                        padding: EdgeInsets.all(8),
+                                      ),
+                                      AnimatedDefaultTextStyle(
+                                        duration: Duration(milliseconds: 300),
+                                        style: TextStyle(
+                                          color:
+                                              Color.fromARGB(255, 255, 211, 0),
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                        child: Text(category),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                    height: 20), // Espacio para el contenido del GridView
+                _products.isEmpty
+                    ? Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height - 150,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 80,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'No se encontraron productos',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : GridView.builder(
+                        shrinkWrap: true,
+                        physics:
+                            const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Número de columnas
+                          crossAxisSpacing:
+                              8, // Espacio horizontal entre tarjetas
+                          mainAxisSpacing: 8, // Espacio vertical entre tarjetas
+                          childAspectRatio:
+                              2 / 3, // Relación de aspecto de las tarjetas
+                        ),
+                        itemCount: _products.length,
+                        itemBuilder: (context, index) {
+                          final product = _products[index];
+
+                          return FadeInUp(
+                            duration: Duration(milliseconds: 250 + index * 200),
+                            child: ProductCard(
+                              name: product['name'],
+                              description: product['description'],
+                              image: product['image'],
+                              price: product['price'],
+                              sellerId: product['sellerId'],
+                              sellerName: product['sellerName'],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductoPage(
+                                      name: product['name'],
+                                      description: product['description'],
+                                      image: product['image'],
+                                      price: product['price'],
+                                      category: product['category'],
+                                      sellerName: product['sellerName'],
+                                      sellerId: product['sellerId'],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-              actions: [
-                _currentUser != null
-                    ? Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                  context, MyRoutes.PerfilPersonal.name);
-                            },
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage:
-                                      NetworkImage(_currentUser!.logo),
-                                  radius: 20,
-                                  backgroundColor: Color.fromARGB(
-                                      255, 255, 211, 0), // Borde amarillo
-                                ),
-                                const SizedBox(width: 10),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    : IconButton(
-                        icon: const Icon(
-                          Icons.login,
-                          color: Color.fromARGB(
-                              255, 255, 211, 0), // Ícono amarillo
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, MyRoutes.Login.name);
                         },
                       ),
               ],
             ),
           ),
-        ),
-        body: Stack(children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BackgroundPainter(),
-            ),
-          ),
-          Column(
-            children: [
-              Expanded(
-                child: _buildProductList(),
-              ),
-            ],
-          ),
-        ]));
+        ],
+      ),
+    );
   }
 
   Widget _buildProductList() {
@@ -384,7 +482,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 /*
 Scaffold(
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(200.0),
+          preferredSize: const Size.fromHeight(190.0),
           child: ClipRRect(
             borderRadius: const BorderRadius.only(
               bottomLeft:
@@ -393,11 +491,16 @@ Scaffold(
                   Radius.circular(40.0), // Borde inferior derecho redondeado
             ),
             child: AppBar(
-              backgroundColor: Color.fromARGB(255, 33, 46, 127),
-              title: const Text(
-                'Pumitas Emprendedores',
-                style: TextStyle(
-                    color: Color.fromARGB(255, 255, 211, 0)), // Letra amarilla
+              backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+              title: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: const Image(
+                    image: AssetImage('assets/PumitasEmprendedoresAppbar1.png'),
+                    height: 50, // Puedes ajustar el tamaño de la imagen aquí
+                  ),
+                ),
               ),
               flexibleSpace: Padding(
                 padding:
@@ -444,12 +547,11 @@ Scaffold(
                     ),
                     const SizedBox(height: 5),
                     //  categorias
+
                     Container(
-                      height:
-                          80, // Ajusta la altura del contenedor si lo necesitas
+                      height: 80,
                       child: ListView.builder(
-                        scrollDirection:
-                            Axis.horizontal, // Para hacer que sea horizontal
+                        scrollDirection: Axis.horizontal,
                         itemCount: _categories.length,
                         itemBuilder: (context, index) {
                           String category = _categories[index];
@@ -498,37 +600,58 @@ Scaffold(
                               break;
                           }
 
+                          // Verificar si la categoría actual está seleccionada
+                          bool isSelected = _selectedCategoryIndex == index;
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Column(
-                              children: [
-                                IconButton(
-                                  icon: Icon(icon,
-                                      color: Color.fromARGB(
-                                          255, 255, 211, 0)), // Color amarillo
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedCategory = category;
-                                    });
-                                    _filterByCategory(
-                                        category); // Filtrar productos
-                                  },
-                                ),
-                                Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: Color.fromARGB(
-                                        255, 255, 211, 0), // Letra amarilla
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedCategoryIndex =
+                                      index; // Actualiza la categoría seleccionada
+                                  _selectedCategory = category;
+                                });
+                                _filterByCategory(
+                                    category); // Filtrar productos
+                              },
+                              child: Column(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: Duration(milliseconds: 300),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? Color.fromARGB(255, 255, 211, 0)
+                                          : Colors
+                                              .transparent, // Fondo amarillo para categoría seleccionada
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      icon,
+                                      color: isSelected
+                                          ? Color.fromARGB(255, 33, 46, 127)
+                                          : Color.fromARGB(255, 255, 211, 0),
+                                    ),
+                                    padding: EdgeInsets.all(8),
                                   ),
-                                ),
-                              ],
+                                  AnimatedDefaultTextStyle(
+                                    duration: Duration(milliseconds: 300),
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 255, 211, 0),
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                    child: Text(category),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
-
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -547,7 +670,7 @@ Scaffold(
                                   backgroundImage:
                                       NetworkImage(_currentUser!.logo),
                                   radius: 20,
-                                  backgroundColor: Color.fromARGB(
+                                  backgroundColor: const Color.fromARGB(
                                       255, 255, 211, 0), // Borde amarillo
                                 ),
                                 const SizedBox(width: 10),
@@ -584,4 +707,4 @@ Scaffold(
             ],
           ),
         ]));
- */
+*/
