@@ -118,10 +118,39 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: FittedBox(
             fit: BoxFit.contain,
-            child: Image.asset(
-              'assets/PumitasEmprendedoresAppbar1.png',
-              height: 50,
-              fit: BoxFit.contain, // O cualquier ajuste que necesites
+            child: Stack(
+              children: [
+                // Texto con borde amarillo (sin color interior)
+                Text(
+                  'Pumarket',
+                  style: TextStyle(
+                    fontFamily: 'PumarketFont',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 30,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = const Color.fromARGB(
+                          255, 255, 211, 0), // Borde amarillo
+                  ),
+                ),
+                Text(
+                  'Pumarket',
+                  style: const TextStyle(
+                    fontFamily: 'PumarketFont',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 30,
+                    color: Color.fromARGB(254, 33, 46, 127),
+                    shadows: [
+                      Shadow(
+                        offset: Offset(2, 2), // Desplazamiento de la sombra
+                        blurRadius: 3.0, // Difuminado
+                        color: Colors.black54, // Sombra negra con opacidad
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -330,11 +359,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   ),
                 ),
                 const SizedBox(
-                    height: 20), // Espacio para el contenido del GridView
+                    height: 10), // Espacio para el contenido del GridView
                 _products.isEmpty
                     ? Container(
                         width: double.infinity,
-                        height: MediaQuery.of(context).size.height - 150,
+                        height: MediaQuery.of(context).size.height - 240.0,
                         color: Colors.transparent,
                         child: Center(
                           child: Column(
@@ -358,50 +387,58 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           ),
                         ),
                       )
-                    : GridView.builder(
-                        shrinkWrap: true,
-                        physics:
-                            const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // Número de columnas
-                          crossAxisSpacing:
-                              8, // Espacio horizontal entre tarjetas
-                          mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-                          childAspectRatio:
-                              2 / 3, // Relación de aspecto de las tarjetas
+                    : Container(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height - 240.0,
                         ),
-                        itemCount: _products.length,
-                        itemBuilder: (context, index) {
-                          final product = _products[index];
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Número de columnas
+                            crossAxisSpacing:
+                                8, // Espacio horizontal entre tarjetas
+                            mainAxisSpacing:
+                                8, // Espacio vertical entre tarjetas
+                            childAspectRatio:
+                                2 / 3, // Relación de aspecto de las tarjetas
+                          ),
+                          itemCount: _products.length,
+                          itemBuilder: (context, index) {
+                            final product = _products[index];
 
-                          return FadeInUp(
-                            duration: Duration(milliseconds: 250 + index * 200),
-                            child: ProductCard(
-                              name: product['name'],
-                              description: product['description'],
-                              image: product['image'],
-                              price: product['price'],
-                              sellerId: product['sellerId'],
-                              sellerName: product['sellerName'],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductoPage(
-                                      name: product['name'],
-                                      description: product['description'],
-                                      image: product['image'],
-                                      price: product['price'],
-                                      category: product['category'],
-                                      sellerName: product['sellerName'],
-                                      sellerId: product['sellerId'],
+                            return FadeInUp(
+                              duration:
+                                  Duration(milliseconds: 250 + index * 200),
+                              child: ProductCard(
+                                name: product['name'],
+                                description: product['description'],
+                                image: product['image'],
+                                price: product['price'],
+                                sellerId: product['sellerId'],
+                                sellerName: product['sellerName'],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductoPage(
+                                        name: product['name'],
+                                        description: product['description'],
+                                        image: product['image'],
+                                        price: product['price'],
+                                        category: product['category'],
+                                        sellerName: product['sellerName'],
+                                        sellerId: product['sellerId'],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
               ],
             ),

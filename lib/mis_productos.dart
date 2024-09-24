@@ -84,6 +84,8 @@ class _MisProductosState extends State<MisProductos> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: const Text('Mis Productos'),
       ),
       body: Stack(

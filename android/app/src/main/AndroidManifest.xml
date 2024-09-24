@@ -9,7 +9,7 @@
 
 
     <application
-        android:label="Pumitas Emprendedores"
+        android:label="Pumarket"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
