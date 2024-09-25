@@ -122,24 +122,24 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               children: [
                 // Texto con borde amarillo (sin color interior)
                 Text(
-                  'Pumarket',
+                  '      Pumarket',
                   style: TextStyle(
-                    fontFamily: 'PumarketFont',
+                    fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w700,
-                    fontSize: 30,
+                    fontSize: 48,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
-                      ..strokeWidth = 3
+                      ..strokeWidth = 4
                       ..color = const Color.fromARGB(
                           255, 255, 211, 0), // Borde amarillo
                   ),
                 ),
                 Text(
-                  'Pumarket',
+                  '      Pumarket',
                   style: const TextStyle(
-                    fontFamily: 'PumarketFont',
+                    fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w400,
-                    fontSize: 30,
+                    fontSize: 48,
                     color: Color.fromARGB(254, 33, 46, 127),
                     shadows: [
                       Shadow(

@@ -77,6 +77,19 @@ flutter:
       fonts:
         - asset: assets/fuente/Minecrafter.Alt.ttf
         - asset: assets/fuente/Minecrafter.Reg.ttf
+       
+    - family: Coolvetica
+      fonts:
+        - asset: assets/fuente/coolvetica.otf
+
+    - family: University
+      fonts:
+        - asset: assets/fuente/University.otf
+
+    - family: Sunflower
+      fonts:
+        - asset: assets/fuente/sunflower.otf
+    
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
