@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
@@ -6,7 +7,6 @@ import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
-//import 'package:firebase_auth/firebase_auth.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -46,8 +46,7 @@ class _LoginPageState extends State<LoginPage> {
       showLoadingDialog(context);
 
       try {
-        /*
-        para cuando implementemps la autenticación mediante firebase
+        // Autenticación mediante Firebase
         UserCredential userCredential =
             await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: correocontroller.text,
@@ -56,7 +55,8 @@ class _LoginPageState extends State<LoginPage> {
 
         // Si el login fue exitoso, obtenemos el UID del usuario autenticado
         String userId = userCredential.user?.uid ?? '';
-        */
+
+        // Buscamos al usuario en Firestore
         final QuerySnapshot userQuery = await FirebaseFirestore.instance
             .collection('sellers')
             .where('email', isEqualTo: correocontroller.text)
@@ -69,58 +69,57 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           final userData = userQuery.docs.first.data() as Map<String, dynamic>;
 
-          // Verifica la contraseña
-          if (userData['password'] == contracontroller.text) {
-            Get.snackbar('Éxito', 'Inicio de sesión exitoso');
+          Get.snackbar('Éxito', 'Inicio de sesión exitoso');
 
-            // Crea el objeto Usuario
-            Usuario usuario = Usuario(
-              id: userQuery.docs.first.id,
-              name: userData['name'],
-              email: userData['email'],
-              description: userData['description'],
-              instagram: userData['instagram'],
-              whatsapp: userData['whatsapp'],
-              password: userData['password'],
-              logo: userData['logo'],
-              sede: userData['sede'],
-            );
-            print(userData['name']);
-            print(userQuery.docs.first.id);
+          // Crea el objeto Usuario
+          Usuario usuario = Usuario(
+            id: userQuery.docs.first.id,
+            name: userData['name'],
+            email: userData['email'],
+            description: userData['description'],
+            instagram: userData['instagram'],
+            whatsapp: userData['whatsapp'],
+            logo: userData['logo'],
+            sede: userData['sede'],
+          );
 
-            // Obtén el controlador de usuario y guarda el usuario en la base de datos local
-            final UsuarioController usuarioController =
-                Get.put(UsuarioController());
+          // Obtén el controlador de usuario y guarda el usuario en la base de datos local
+          final UsuarioController usuarioController =
+              Get.put(UsuarioController());
 
-            await usuarioController.addUsuario(
-              id: usuario.id,
-              name: usuario.name,
-              email: usuario.email,
-              description: usuario.description,
-              instagram: usuario.instagram,
-              whatsapp: usuario.whatsapp,
-              password: usuario.password,
-              logo: usuario.logo,
-              sede: usuario.sede,
-            );
-            Navigator.of(context).pop();
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              MyRoutes.PantallaPrincipal.name,
-              (Route<dynamic> route) => false,
-            );
-          } else {
-            Navigator.of(context).pop();
-            Get.snackbar('Error', 'Contraseña incorrecta');
-          }
+          await usuarioController.addUsuario(
+            id: usuario.id,
+            name: usuario.name,
+            email: usuario.email,
+            description: usuario.description,
+            instagram: usuario.instagram,
+            whatsapp: usuario.whatsapp,
+            logo: usuario.logo,
+            sede: usuario.sede,
+          );
+          Navigator.of(context).pop();
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            MyRoutes.PantallaPrincipal.name,
+            (Route<dynamic> route) => false,
+          );
         }
+      } on FirebaseAuthException catch (e) {
+        Navigator.of(context).pop();
+        String message = 'Error al iniciar sesión';
+        if (e.code == 'user-not-found') {
+          message = 'Usuario no encontrado';
+        } else if (e.code == 'wrong-password') {
+          message = 'Contraseña incorrecta';
+        }
+        Get.snackbar('Error', message);
+        print("Error: $e");
       } catch (e) {
         Navigator.of(context).pop();
-        Get.snackbar('Error', 'Error al iniciar sesión');
+        Get.snackbar('Error', 'Ocurrió un error inesperado');
         print("Error: $e");
       }
     } else {
-      Navigator.of(context).pop();
       Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
   }

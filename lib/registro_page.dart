@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
@@ -102,12 +101,12 @@ class _RegistroPageState extends State<RegistroPage> {
           }
           DocumentReference sellerRef =
               await FirebaseFirestore.instance.collection('sellers').add({
+            'uid': userCredential.user!.uid,
             'name': _nombreController.text,
             'email': _correoController.text,
             'description': _descripcionController.text,
             'instagram': _instagramController.text,
             'whatsapp': _whatsappController.text,
-            'password': _contrasenaController.text,
             'logo': logoUrl,
             'sede': _sedeController.text,
           });
@@ -121,7 +120,6 @@ class _RegistroPageState extends State<RegistroPage> {
             description: _descripcionController.text,
             instagram: _instagramController.text,
             whatsapp: _whatsappController.text,
-            password: _contrasenaController.text,
             logo: logoUrl,
             sede: _sedeController.text,
           );
@@ -150,43 +148,39 @@ class _RegistroPageState extends State<RegistroPage> {
     }
   }
 
-
   void _validateEmail() async {
-  String email = _correoController.text.trim(); 
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collection('sellers')
-      .where('email', isEqualTo: email)
-      .get();
+    String email = _correoController.text.trim();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('sellers')
+        .where('email', isEqualTo: email)
+        .get();
 
-       String name = _nombreController.text.trim(); 
-  QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
-      .collection('sellers')
-      .where('name', isEqualTo: name)
-      .get();
+    String name = _nombreController.text.trim();
+    QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
+        .collection('sellers')
+        .where('name', isEqualTo: name)
+        .get();
 
-  if (querySnapshot.docs.isNotEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('El correo ya existe, por favor ingrese otro.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } 
-  if(querySnapshot2.docs.isNotEmpty){
-     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('El nombre de usuario ya existe, por favor ingrese otro.'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    if (querySnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El correo ya existe, por favor ingrese otro.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    if (querySnapshot2.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('El nombre de usuario ya existe, por favor ingrese otro.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      registerSeller();
+    }
   }
-  else {
-   
-    registerSeller();
-  }
-}
-
-
 
   @override
   Widget build(BuildContext context) {

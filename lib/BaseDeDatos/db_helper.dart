@@ -24,7 +24,6 @@ class DBHelper {
             "description TEXT,"
             "instagram TEXT,"
             "whatsapp TEXT,"
-            "password TEXT,"
             "logo TEXT,"
             "sede TEXT)",
           );

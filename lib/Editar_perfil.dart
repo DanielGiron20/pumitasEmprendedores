@@ -146,7 +146,6 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
             'description': _descripcionController.text,
             'instagram': _instagramController.text,
             'whatsapp': _whatsappController.text,
-            'password': _currentUser!.password.toString(),
             'logo': newImageUrl.toString(),
             'sede': _currentUser!.sede.toString(),
           });
