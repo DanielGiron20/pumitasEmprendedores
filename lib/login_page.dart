@@ -52,6 +52,19 @@ class _LoginPageState extends State<LoginPage> {
           email: correocontroller.text,
           password: contracontroller.text,
         );
+        User? user = FirebaseAuth.instance.currentUser;
+        await user
+            ?.reload(); // Recarga el estado del usuario para obtener los datos más recientes
+        if (user != null && user.emailVerified) {
+          // El usuario ha verificado su correo
+          Get.snackbar('Éxito', 'Correo verificado exitosamente');
+        } else {
+          // El correo aún no ha sido verificado
+          Get.snackbar(
+              'Error', 'Por favor, verifica tu correo antes de continuar');
+          Navigator.of(context).pop();
+          return;
+        }
 
         // Si el login fue exitoso, obtenemos el UID del usuario autenticado
         String userId = userCredential.user?.uid ?? '';

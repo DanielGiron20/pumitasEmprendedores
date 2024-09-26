@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
@@ -84,12 +83,15 @@ class _RegistroPageState extends State<RegistroPage> {
         Get.snackbar('Error', 'Ese Nombre de usuario ya existe');
       } else {
         try {
-          //para cuando implementemos la autenticación mediante firebase
+          // Registrar el usuario en Firebase Auth
           UserCredential userCredential =
               await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: _correoController.text,
             password: _contrasenaController.text,
           );
+
+          // Enviar el correo de verificación
+          await userCredential.user!.sendEmailVerification();
 
           String logoUrl = '';
           if (_logoFile != null) {
@@ -99,6 +101,7 @@ class _RegistroPageState extends State<RegistroPage> {
             final uploadTask = await storageRef.putFile(_logoFile!);
             logoUrl = await uploadTask.ref.getDownloadURL();
           }
+
           DocumentReference sellerRef =
               await FirebaseFirestore.instance.collection('sellers').add({
             'uid': userCredential.user!.uid,
@@ -110,22 +113,12 @@ class _RegistroPageState extends State<RegistroPage> {
             'logo': logoUrl,
             'sede': _sedeController.text,
           });
-          String sellerId = sellerRef.id;
-          final UsuarioController usuarioController =
-              Get.put(UsuarioController());
-          await usuarioController.addUsuario(
-            id: sellerId,
-            name: _nombreController.text,
-            email: _correoController.text,
-            description: _descripcionController.text,
-            instagram: _instagramController.text,
-            whatsapp: _whatsappController.text,
-            logo: logoUrl,
-            sede: _sedeController.text,
-          );
 
-          Get.snackbar('Éxito', 'Vendedor registrado exitosamente');
+          // Mostrar un mensaje indicando que el usuario debe verificar su correo
+          Get.snackbar('Verificación de correo',
+              'Hemos enviado un correo de verificación a tu dirección de correo. Por favor, verifica tu correo antes de continuar.');
 
+          // Redirigir o esperar a que verifique su correo
           _formKey.currentState?.reset();
           setState(() {
             _logoFile = null;
