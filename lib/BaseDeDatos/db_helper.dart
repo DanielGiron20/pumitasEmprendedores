@@ -1,23 +1,28 @@
+import 'package:pumitas_emprendedores/BaseDeDatos/sede.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DBHelper {
   static Database? _db;
   static final int _version = 1;
-  static final String _tableName = "usuarios";
+  static final String _tableNameUsuarios = "usuarios";
+  static final String _tableNameSedes = "sedes";
 
+  // Inicializa la base de datos
   static Future<void> initDB() async {
     if (_db != null) return;
 
     try {
-      String _path = await getDatabasesPath() + 'usuarios.db';
+      String _path = await getDatabasesPath() + 'pumitas.db';
       _db = await openDatabase(
         _path,
         version: _version,
         onCreate: (db, version) {
-          print("Creando nueva tabla de usuarios");
-          return db.execute(
-            "CREATE TABLE $_tableName("
+          print("Creando nuevas tablas de usuarios y sedes");
+
+          // Tabla de Usuarios
+          db.execute(
+            "CREATE TABLE $_tableNameUsuarios("
             "id TEXT PRIMARY KEY,"
             "name TEXT,"
             "email TEXT,"
@@ -27,6 +32,13 @@ class DBHelper {
             "logo TEXT,"
             "sede TEXT)",
           );
+
+          // Tabla de Sedes
+          db.execute(
+            "CREATE TABLE $_tableNameSedes("
+            "id TEXT PRIMARY KEY,"
+            "cede TEXT)",
+          );
         },
       );
     } catch (e) {
@@ -34,16 +46,18 @@ class DBHelper {
     }
   }
 
+  // Métodos para Usuarios
+
   // Inserta un nuevo usuario
   static Future<int> insertUsuario(Usuario usuario) async {
     print("Insertando usuario");
-    return await _db?.insert(_tableName, usuario.toJson()) ?? 1;
+    return await _db?.insert(_tableNameUsuarios, usuario.toJson()) ?? 1;
   }
 
   // Consulta todos los usuarios
   static Future<List<Usuario>> queryUsuarios() async {
     final List<Map<String, dynamic>> usuariosMapList =
-        await _db!.query(_tableName);
+        await _db!.query(_tableNameUsuarios);
     return usuariosMapList
         .map((usuarioMap) => Usuario.fromJson(usuarioMap))
         .toList();
@@ -51,15 +65,52 @@ class DBHelper {
 
   // Elimina un usuario
   static Future<int> deleteUsuario(Usuario usuario) async {
-    return await _db!
-        .delete(_tableName, where: 'id = ?', whereArgs: [usuario.id]);
+    return await _db!.delete(
+      _tableNameUsuarios,
+      where: 'id = ?',
+      whereArgs: [usuario.id],
+    );
   }
 
-  // Actualiza un usuario con campos específicos
+  // Actualiza un usuario
   static Future<int> updateUsuario(
       String id, Map<String, dynamic> updates) async {
     return await _db!.update(
-      _tableName,
+      _tableNameUsuarios,
+      updates,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Métodos para Sedes
+
+  // Inserta una nueva sede
+  static Future<int> insertSede(Sede sede) async {
+    print("Insertando sede");
+    return await _db?.insert(_tableNameSedes, sede.toJson()) ?? 1;
+  }
+
+  // Consulta todas las sedes
+  static Future<List<Sede>> querySedes() async {
+    final List<Map<String, dynamic>> sedesMapList =
+        await _db!.query(_tableNameSedes);
+    return sedesMapList.map((sedeMap) => Sede.fromJson(sedeMap)).toList();
+  }
+
+  // Elimina una sede
+  static Future<int> deleteSede(Sede sede) async {
+    return await _db!.delete(
+      _tableNameSedes,
+      where: 'id = ?',
+      whereArgs: [sede.id],
+    );
+  }
+
+  // Actualiza una sede
+  static Future<int> updateSede(String id, Map<String, dynamic> updates) async {
+    return await _db!.update(
+      _tableNameSedes,
       updates,
       where: 'id = ?',
       whereArgs: [id],

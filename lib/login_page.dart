@@ -56,8 +56,6 @@ class _LoginPageState extends State<LoginPage> {
         await user
             ?.reload(); // Recarga el estado del usuario para obtener los datos más recientes
         if (user != null && user.emailVerified) {
-          // El usuario ha verificado su correo
-          Get.snackbar('Éxito', 'Correo verificado exitosamente');
         } else {
           // El correo aún no ha sido verificado
           Get.snackbar(

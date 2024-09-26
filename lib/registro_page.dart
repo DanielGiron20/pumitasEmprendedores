@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pumitas_emprendedores/rutas.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class RegistroPage extends StatefulWidget {
@@ -72,6 +71,64 @@ class _RegistroPageState extends State<RegistroPage> {
 
   Future<void> registerSeller() async {
     if (_formKey.currentState?.validate() ?? false) {
+      try {
+        showLoadingDialog(context);
+
+        // Registrar el usuario en Firebase Auth
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _correoController.text,
+          password: _contrasenaController.text,
+        );
+
+        // Enviar el correo de verificación
+        await userCredential.user!.sendEmailVerification();
+
+        String logoUrl = '';
+        if (_logoFile != null) {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('logos/${DateTime.now().millisecondsSinceEpoch}.png');
+          final uploadTask = await storageRef.putFile(_logoFile!);
+          logoUrl = await uploadTask.ref.getDownloadURL();
+        }
+
+        // Guardar información del vendedor en Firestore
+        await FirebaseFirestore.instance.collection('sellers').add({
+          'uid': userCredential.user!.uid,
+          'name': _nombreController.text,
+          'email': _correoController.text,
+          'description': _descripcionController.text,
+          'instagram': _instagramController.text,
+          'whatsapp': _whatsappController.text,
+          'logo': logoUrl,
+          'sede': _sedeController.text,
+        });
+
+        // Mostrar un mensaje de éxito
+        Get.snackbar('Verificación de correo',
+            'Se ha enviado un correo de verificación. Verifica tu correo antes de continuar.');
+
+        // Restablecer el formulario
+        _formKey.currentState?.reset();
+        setState(() {
+          _logoFile = null;
+        });
+
+        Navigator.of(context).pop();
+        Navigator.pop(context);
+      } catch (e) {
+        Navigator.of(context).pop();
+        Get.snackbar('Error', 'Error al registrar el vendedor');
+        print("Error: $e");
+      }
+    } else {
+      Get.snackbar('Error', 'Por favor complete los campos correctamente');
+    }
+  }
+
+  /*Future<void> registerSeller() async {
+    if (_formKey.currentState?.validate() ?? false) {
       showLoadingDialog(context);
       final QuerySnapshot nameQuery = await FirebaseFirestore.instance
           .collection('sellers')
@@ -125,11 +182,7 @@ class _RegistroPageState extends State<RegistroPage> {
           });
 
           Navigator.of(context).pop();
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            MyRoutes.PantallaPrincipal.name,
-            (Route<dynamic> route) => false,
-          );
+          Navigator.pop(context);
         } catch (e) {
           Navigator.of(context).pop();
           Get.snackbar('Error', 'Error al registrar el vendedor');
@@ -139,7 +192,7 @@ class _RegistroPageState extends State<RegistroPage> {
     } else {
       Get.snackbar('Error', 'Por favor complete los campos correctamente');
     }
-  }
+  }*/
 
   void _validateEmail() async {
     String email = _correoController.text.trim();
@@ -161,8 +214,7 @@ class _RegistroPageState extends State<RegistroPage> {
           backgroundColor: Colors.red,
         ),
       );
-    }
-    if (querySnapshot2.docs.isNotEmpty) {
+    } else if (querySnapshot2.docs.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
@@ -171,6 +223,7 @@ class _RegistroPageState extends State<RegistroPage> {
         ),
       );
     } else {
+      // Si todo es correcto, se procede a registrar
       registerSeller();
     }
   }
@@ -247,6 +300,10 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (!GetUtils.isEmail(valor)) {
                               return 'El correo no es válido';
                             }
+                            if (!valor.endsWith('@unah.hn') &&
+                                !valor.endsWith('@unah.edu.hn')) {
+                              return 'El correo debe ser correo institucional de la UNAH';
+                            }
                             return null;
                           },
                           teclado: TextInputType.emailAddress,
@@ -262,6 +319,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor == null || valor.isEmpty) {
                               return 'La descripción es obligatoria';
                             }
+                            if (valor.length < 10) {}
                             return null;
                           },
                           teclado: TextInputType.text,
