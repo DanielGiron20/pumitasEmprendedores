@@ -6,6 +6,7 @@ import 'package:pumitas_emprendedores/mis_productos.dart';
 import 'package:pumitas_emprendedores/pantalla_principal.dart';
 import 'package:pumitas_emprendedores/perfil_personal.dart';
 import 'package:pumitas_emprendedores/registro_page.dart';
+import 'package:pumitas_emprendedores/sede_selector.dart';
 
 enum MyRoutes {
   PantallaPrincipal,
@@ -15,7 +16,7 @@ enum MyRoutes {
   AgregarProducto,
   MisProductos,
   EditarProducto,
-  Editar_perfil,
+  SedeSelector,
 }
 
 final Map<String, Widget Function(BuildContext)> routes = {
@@ -33,4 +34,5 @@ final Map<String, Widget Function(BuildContext)> routes = {
         price: 0,
         category: '',
       ),
+  MyRoutes.SedeSelector.name: (context) => const SedeSelector(),
 };
