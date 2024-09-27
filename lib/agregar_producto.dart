@@ -201,8 +201,8 @@ class _AgregarProductoState extends State<AgregarProducto> {
                         CustomInputs(
                           controller: _categoriaController,
                           validator: (valor) {
-                            if (valor == null || valor.isEmpty) {
-                              return 'La categoría es obligatoria';
+                            if (_categoriaController.text == "") {
+                              _categoriaController.text = "Ropa";
                             }
                             return null;
                           },

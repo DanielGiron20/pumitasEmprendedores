@@ -302,7 +302,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             }
                             if (!valor.endsWith('@unah.hn') &&
                                 !valor.endsWith('@unah.edu.hn')) {
-                              return 'El correo debe ser correo institucional de la UNAH';
+                              return 'El correo debe ser un correo institucional de la UNAH';
                             }
                             return null;
                           },
