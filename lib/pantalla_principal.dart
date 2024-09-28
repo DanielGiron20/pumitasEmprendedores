@@ -1,7 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/producto.dart';
@@ -21,9 +20,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
   final TextEditingController controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
   int _selectedCategoryIndex = 0;
-  List<String> _categories = [
+  final List<String> _categories = [
     'Todos',
     'Ropa',
     'Accesorios',
@@ -39,14 +39,19 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Otros'
   ];
 
+  int _pageSize = 8; //Cantidad de productos por petición
+  DocumentSnapshot? _lastDocument; //Ultimo documento cargado
+  bool _hasMoreProducts = true; //variable bandera para indicar si hay más productos que cargar
+
   @override
   void initState() {
     super.initState();
     _checkUser();
-   // _loadProducts();
+    _scrollController.addListener(_scrollListener); // al cargar la app se carga el scrollListener
+    _loadProducts(isInitialLoad: true); //y se arga la primera petición
   }
 
-  Future<void> _checkUser() async {
+  Future<void> _checkUser() async { // funcion para comprobar si hay un usuario logueado
     List<Usuario> usuarios = await DBHelper.queryUsuarios();
     if (usuarios.isNotEmpty) {
       setState(() {
@@ -55,30 +60,56 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-  /*Future<void> _loadProducts() async {
+  Future<void> _loadProducts({bool isInitialLoad = false}) async { //funcion para cargar los productos 
+    if (!_hasMoreProducts && !isInitialLoad) return; // Si ya no hay más productos, no cargara más
+
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference productsCollection = firestore.collection('products');
+    CollectionReference productsCollection = firestore.collection('products'); // Referencia a la colección de productos
 
-    QuerySnapshot snapshot = await productsCollection.get();
-    setState(() {
-      _products = snapshot.docs.map((doc) {
-        return {
-          'name': doc['name'],
-          'description': doc['description'],
-          'image': doc['image'],
-          'price': doc['price'],
-          'category': doc['category'],
-          'sellerId': doc['sellerId'],
-          'sellerName': doc['sellerName'],
-        };
-      }).toList();
-      _allProducts = List.from(_products);
-      _products.shuffle();
-      _allProducts.shuffle();
-    });
-  } */
+    Query query = productsCollection.limit(_pageSize); // Limitar a _pageSize productos
 
-  @override
+    if (_lastDocument != null && !isInitialLoad) {
+      query = query.startAfterDocument(_lastDocument!); // Empezar después del último documento cargado
+    }
+
+    QuerySnapshot snapshot = await query.get();
+
+    if (snapshot.docs.isNotEmpty) {
+      setState(() {
+        _products.addAll(snapshot.docs.map((doc) { // Agregar los nuevos productos a la lista existente
+          return {
+            'name': doc['name'],
+            'description': doc['description'],
+            'image': doc['image'],
+            'price': doc['price'],
+            'category': doc['category'],
+            'sellerId': doc['sellerId'],
+            'sellerName': doc['sellerName'],
+          };
+        }).toList());
+
+        _allProducts = List.from(_products); // Actualizar la lista de todos los productos
+        _lastDocument = snapshot.docs.last; // Actualizar el último documento cargado
+
+        if (snapshot.docs.length < _pageSize) { //validar si hay mas productos que cargar
+          _hasMoreProducts = false;
+        }
+      });
+    } else {
+      setState(() {
+        _hasMoreProducts = false;
+      });
+    }
+  }
+
+
+  void _scrollListener() { //funcion para el scrollListener
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      _loadProducts();
+    }
+  }
+  
+  // Esta funciones se modificara a fin de que sean paginadas
   void _searchProducts(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -98,6 +129,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
+// Esta funciones se modificara a fin de que sean paginadas
   void _filterByCategory(String? category) {
     setState(() {
       if (category == 'Todos' || category == null) {
@@ -110,9 +142,17 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 33, 46, 127),
         foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Container(
@@ -194,10 +234,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           Positioned.fill(
             child: CustomPaint(
               painter:
-                  BackgroundPainter(), // Tu clase personalizada para el fondo
+                  BackgroundPainter(), // La clase personalizada para el fondo
             ),
           ),
           SingleChildScrollView(
+            controller: _scrollController, // Controlador del scroll, NO ESTOY SEGURO DE PORQUE DEBE IR AQUI Y NO EN EL GRIDVIEW BUILDER PERO VA ACA (NO TOCAR)
             child: Column(
               children: [
                 ClipRRect(
@@ -363,8 +404,20 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   ),
                 ),
                 const SizedBox(height: 10), 
-                // Espacio para el contenido del GridView
-               /* _products.isEmpty
+_buildEmptyState(),
+_buildProductGrid(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildEmptyState() { // Verificar si hay productos
+   return
+    _products.isEmpty
                     ? Container(
                         width: double.infinity,
                         height: MediaQuery.of(context).size.height - 240.0,
@@ -391,164 +444,58 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           ),
                         ),
                       )
-                    :*/ Container(
-                        constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height - 240.0,
-                        ),
-                        child: PaginateFirestore(
-                          shrinkWrap: true,
-                          physics:
-                              const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Número de columnas
-                            crossAxisSpacing:
-                                8, // Espacio horizontal entre tarjetas
-                            mainAxisSpacing:
-                                8, // Espacio vertical entre tarjetas
-                            childAspectRatio:
-                                2 / 3, // Relación de aspecto de las tarjetas
-                          ),
+                    : Container();
+  }
 
-                          query: FirebaseFirestore.instance.collection("products"),
-                          itemBuilderType: PaginateBuilderType.gridView,
-                          itemsPerPage: 10,
-                          initialLoader: const Center(child: CircularProgressIndicator.adaptive()),
-                          onEmpty: Container(
-                        width: double.infinity,
-                        height: MediaQuery.of(context).size.height - 240.0,
-                        color: Colors.transparent,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 80,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'No se encontraron productos',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      onError: (e) => const Center(child: Text("Error al cargar los productos"),),
-                      bottomLoader: const Center(child: CircularProgressIndicator()),
-                          itemBuilder: (context,snapshot, index) {
-                            final Map<String, dynamic> product = snapshot[index].data() as Map<String, dynamic>;
-
-                            final name = product['name'];
-                            final description = product['description'];
-                            final price = product['price'];
-                            final imageUrl = product['image'];  
-                            final sellerId = product['sellerId'];
-                            final sellerName = product['sellerName'];
-
-                            return FadeInUp(
-                              duration:
-                                  Duration(milliseconds: 250 + index * 200),
-                              child: ProductCard(
-                                name: name,
-                                description:description,
-                                image: imageUrl,
-                                price: price,
-                                sellerId: sellerId,
-                                sellerName: sellerName,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProductoPage(
-                                        name: product['name'],
-                                        description: product['description'],
-                                        image: product['image'],
-                                        price: product['price'],
-                                        category: product['category'],
-                                        sellerName: product['sellerName'],
-                                        sellerId: product['sellerId'],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        )
-                        
-                        
-                        
-
-
-                        
-                        
-                        /*GridView.builder(
-                          shrinkWrap: true,
-                          physics:
-                              const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Número de columnas
-                            crossAxisSpacing:
-                                8, // Espacio horizontal entre tarjetas
-                            mainAxisSpacing:
-                                8, // Espacio vertical entre tarjetas
-                            childAspectRatio:
-                                2 / 3, // Relación de aspecto de las tarjetas
-                          ),
-                          itemCount: _products.length,
-                          itemBuilder: (context, index) {
-                            final product = _products[index];
-
-                            return FadeInUp(
-                              duration:
-                                  Duration(milliseconds: 250 + index * 200),
-                              child: ProductCard(
-                                name: product['name'],
-                                description: product['description'],
-                                image: product['image'],
-                                price: product['price'],
-                                sellerId: product['sellerId'],
-                                sellerName: product['sellerName'],
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProductoPage(
-                                        name: product['name'],
-                                        description: product['description'],
-                                        image: product['image'],
-                                        price: product['price'],
-                                        category: product['category'],
-                                        sellerName: product['sellerName'],
-                                        sellerId: product['sellerId'],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),*/
-
-
-
-
-
-
-                      ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  Widget _buildProductGrid() { // Mostrar productos
+   return 
+   Container(           
+  constraints: BoxConstraints(
+    minHeight: MediaQuery.of(context).size.height - 240.0,
+  ),
+  child: GridView.builder(  
+     // Controlador de scroll
+    shrinkWrap: true,
+    physics: const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2, // Número de columnas
+      crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
+      mainAxisSpacing: 8, // Espacio vertical entre tarjetas
+      childAspectRatio: 2 / 3, // Relación de aspecto de las tarjetas
+    ),
+    itemCount: _products.length,
+    itemBuilder: (context, index) {
+      final product = _products[index];
+       
+      return FadeInUp(
+        duration: Duration(milliseconds: 250 + index * 200),
+        child: ProductCard(
+          name: product['name'],
+          description: product['description'],
+          image: product['image'],
+          price: product['price'],
+          sellerId: product['sellerId'],
+          sellerName: product['sellerName'],
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductoPage(
+                  name: product['name'],
+                  description: product['description'],
+                  image: product['image'],
+                  price: product['price'],
+                  category: product['category'],
+                  sellerName: product['sellerName'],
+                  sellerId: product['sellerId'],
+                ),
+              ),
+            );
+          },
+        ),
+      );  
+    },
+  ),
+);
   }
 }
