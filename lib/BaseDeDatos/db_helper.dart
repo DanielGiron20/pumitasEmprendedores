@@ -31,7 +31,7 @@ class DBHelper {
             "instagram TEXT,"
             "whatsapp TEXT,"
             "logo TEXT,"
-            "sede TEXT),"
+            "sede TEXT,"
             "eneable INTEGER)",
           );
 

@@ -591,6 +591,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             ),
           )
         : Container();
+    print('pon se la come');
   }
 
   Widget _buildProductGrid() {

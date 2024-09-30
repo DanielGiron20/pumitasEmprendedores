@@ -98,6 +98,7 @@ class _LoginPageState extends State<LoginPage> {
             whatsapp: userData['whatsapp'],
             logo: userData['logo'],
             sede: userData['sede'],
+            eneable: userData['eneable'],
           );
 
           // Obtén el controlador de usuario y guarda el usuario en la base de datos local
@@ -114,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
             whatsapp: usuario.whatsapp,
             logo: usuario.logo,
             sede: usuario.sede,
+            eneable: usuario.eneable,
           );
           Navigator.of(context).pop();
           Navigator.pushNamedAndRemoveUntil(
