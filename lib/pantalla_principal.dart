@@ -56,7 +56,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Otros'
   ];
 
-  int _pageSize = 8; //Cantidad de productos por petición
+  int _pageSize = 20; //Cantidad de productos por petición
   DocumentSnapshot? _lastDocument; //Ultimo documento cargado
   DocumentSnapshot? _lastDocumentTodos;
   DocumentSnapshot? _lastDocumentRopa;
@@ -72,8 +72,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   DocumentSnapshot? _lastDocumentArte;
   DocumentSnapshot? _lastDocumentOtros;
 
-  bool _hasMoreProducts =
-      true; //variable bandera para indicar si hay más productos que cargar
+  bool _hasMoreProducts = true; //variable bandera para indicar si hay más productos que cargar
   final List<bool> _categoruesHasProducts = List.generate(13, (_) => true);
 
   // Variables globales para paginacion en la busqueda de productos por medio de la barra de busqueda
@@ -135,69 +134,59 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-  Future<void> _loadProducts(
-      {bool isInitialLoad = false, int index = 0}) async {
-    //funcion para cargar los productos
-    if (!_hasMoreProducts && !isInitialLoad)
-      return; // Si ya no hay más productos, no cargara más
+ Future<void> _loadProducts(
+    {bool isInitialLoad = false, int index = 0}) async {
+  //funcion para cargar los productos
+  if (!_hasMoreProducts && !isInitialLoad) return;
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference productsCollection = firestore
-        .collection('products'); // Referencia a la colección de productos
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  CollectionReference productsCollection = firestore.collection('products');
 
-    Query query =
-        productsCollection.limit(_pageSize); // Limitar a _pageSize productos
+  // Aplica el filtro de categoría aquí
+  Query query = productsCollection.limit(_pageSize);
 
-    if (_lastDocument != null && !isInitialLoad) {
-      query = query.startAfterDocument(
-          _lastDocument!); // Empezar después del último documento cargado
-    }
+  if (_selectedCategory != null && _selectedCategory != 'Todos') {
+    query = query.where('category', isEqualTo: _selectedCategory);
+  }
 
-    QuerySnapshot snapshot = await query.get();
-    if (_selectedCategory != null && _selectedCategory != 'Todos') {
-      // Filtrar por categoría
-      snapshot = await productsCollection
-          .where('category', isEqualTo: _selectedCategory)
-          .get();
-    }
+  if (_lastDocument != null && !isInitialLoad) {
+    query = query.startAfterDocument(_lastDocument!); 
+  }
 
-    if (snapshot.docs.isNotEmpty) {
-      setState(() {
-        _products.addAll(snapshot.docs.map((doc) {
-          // Agregar los nuevos productos a la lista existente
-          return {
-            'name': doc['name'],
-            'description': doc['description'],
-            'image': doc['image'],
-            'price': doc['price'],
-            'category': doc['category'],
-            'sellerId': doc['sellerId'],
-            'sellerName': doc['sellerName'],
-          };
-        }).toList());
+  QuerySnapshot snapshot = await query.get();
 
-        _allProducts =
-            List.from(_products); // Actualizar la lista de todos los productos
-        _productsByCategory[index] =
-            _products; // Actualizar la lista de productos por categoría
-        _lastDocument =
-            snapshot.docs.last; // Actualizar el último documento cargado
-        _productsSnapshot[index] = _lastDocument;
+  if (snapshot.docs.isNotEmpty) {
+    setState(() {
+      _products.addAll(snapshot.docs.map((doc) {
+        return {
+          'name': doc['name'],
+          'description': doc['description'],
+          'image': doc['image'],
+          'price': doc['price'],
+          'category': doc['category'],
+          'sellerId': doc['sellerId'],
+          'sellerName': doc['sellerName'],
+        };
+      }).toList());
 
-        if (snapshot.docs.length < _pageSize) {
-          //validar si hay mas productos que cargar
-          _hasMoreProducts = false;
-          _categoruesHasProducts[index] = false;
-        }
-        //validar si hay mas productos que cargar dado el caso qie sea por categoría
-      });
-    } else {
-      setState(() {
+      _allProducts = List.from(_products);
+      _productsByCategory[index] = _products;
+      _lastDocument = snapshot.docs.last;
+      _productsSnapshot[index] = _lastDocument;
+     
+
+      if (snapshot.docs.length < _pageSize) {
         _hasMoreProducts = false;
         _categoruesHasProducts[index] = false;
-      });
-    }
+      }
+    });
+  } else {
+    setState(() {
+      _hasMoreProducts = false;
+      _categoruesHasProducts[index] = false;
+    });
   }
+}
 
   void _scrollListener() {
     //funcion para el scrollListener
@@ -270,22 +259,32 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 
 // Esta funciones se modificara a fin de que sean paginadas
-  void _filterByCategory(String category, int index) {
-    setState(() {
-      _selectedCategory = category;
-      _selectedCategoryIndex = _categories.indexOf(category!);
-      _lastDocument = _productsSnapshot[index]; // Reinicia el último documento
-      _hasMoreProducts = _categoruesHasProducts[
-          index]; // Reinicia la bandera de más productos por si llego al tope
-      // Cargar productos de la nueva categoría
-      controller.clear(); // Limpiar la búsqueda
-      _allProducts = _productsByCategory[
-          index]; // Actualizar la lista de todos los productos
-      _products = _productsByCategory[index];
-      ;
-      _loadProducts(isInitialLoad: true, index: index);
-    });
-  }
+ void _filterByCategory(String category, int index) {
+  setState(() {
+    _selectedCategory = category;
+    _selectedCategoryIndex = _categories.indexOf(category!);
+
+    // Reiniciar el último documento para evitar duplicados
+    _lastDocument = null;
+
+    // Reiniciar la bandera de más productos por si llegó al límite
+    _hasMoreProducts = true; 
+
+    // Limpiar la lista de productos antes de cargar una nueva categoría
+    _allProducts.clear(); 
+    _products.clear();
+
+    // Limpiar la búsqueda
+    controller.clear(); 
+
+    // Si tienes productos almacenados por categoría, puedes reiniciar aquí
+    _allProducts = _productsByCategory[index];
+    _products = _productsByCategory[index];
+
+    // Cargar productos de la nueva categoría
+    _loadProducts(isInitialLoad: true, index: index);
+  });
+}
 
   @override
   void dispose() {
@@ -616,7 +615,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           final product = _products[index];
 
           return FadeInUp(
-            duration: Duration(milliseconds: 250 + index * 200),
+            duration: Duration(milliseconds:150 + index * 100),
             child: ProductCard(
               name: product['name'],
               description: product['description'],
