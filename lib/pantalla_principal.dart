@@ -16,31 +16,13 @@ class PantallaPrincipal extends StatefulWidget {
 }
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
-  late List<DocumentSnapshot?> _productsSnapshot;
   Usuario? _currentUser;
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
-  // Definición de listas para cada categoría
-  List<Map<String, dynamic>> _mapaTodos = [];
-  List<Map<String, dynamic>> _mapaRopa = [];
-  List<Map<String, dynamic>> _mapaAccesorios = [];
-  List<Map<String, dynamic>> _mapaAlimentos = [];
-  List<Map<String, dynamic>> _mapaSalud = [];
-  List<Map<String, dynamic>> _mapaArreglos = [];
-  List<Map<String, dynamic>> _mapaDeportes = [];
-  List<Map<String, dynamic>> _mapaTecnologia = [];
-  List<Map<String, dynamic>> _mapaMascotas = [];
-  List<Map<String, dynamic>> _mapaJuegos = [];
-  List<Map<String, dynamic>> _mapaLibros = [];
-  List<Map<String, dynamic>> _mapaArte = [];
-  List<Map<String, dynamic>> _mapaOtros = [];
-  late List<List<Map<String, dynamic>>> _productsByCategory;
-
   final TextEditingController controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  String _selectedCategory = 'Todos';
+  String? _selectedCategory;
   int _selectedCategoryIndex = 0;
-  final List<String> _categories = [
+  List<String> _categories = [
     'Todos',
     'Ropa',
     'Accesorios',
@@ -56,76 +38,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Otros'
   ];
 
-  int _pageSize = 20; //Cantidad de productos por petición
-  DocumentSnapshot? _lastDocument; //Ultimo documento cargado
-  DocumentSnapshot? _lastDocumentTodos;
-  DocumentSnapshot? _lastDocumentRopa;
-  DocumentSnapshot? _lastDocumentAccesorios;
-  DocumentSnapshot? _lastDocumentAlimentos;
-  DocumentSnapshot? _lastDocumentSalud;
-  DocumentSnapshot? _lastDocumentArreglos;
-  DocumentSnapshot? _lastDocumentDeportes;
-  DocumentSnapshot? _lastDocumentTecnologia;
-  DocumentSnapshot? _lastDocumentMascotas;
-  DocumentSnapshot? _lastDocumentJuegos;
-  DocumentSnapshot? _lastDocumentLibros;
-  DocumentSnapshot? _lastDocumentArte;
-  DocumentSnapshot? _lastDocumentOtros;
-
-  bool _hasMoreProducts = true; //variable bandera para indicar si hay más productos que cargar
-  final List<bool> _categoruesHasProducts = List.generate(13, (_) => true);
-
-  // Variables globales para paginacion en la busqueda de productos por medio de la barra de busqueda
-  int _currentPage = 0;
-  List<Map<String, dynamic>> _filteredProducts =
-      []; // Productos filtrados para paginación
-  bool _isLoading = false; // Estado de carga
-  bool _hasMore = true; // Indica si hay más productos para cargar
-
   @override
   void initState() {
     super.initState();
     _checkUser();
-    _scrollController.addListener(_scrollListener); // Cargar el scrollListener
-    _loadProducts(isInitialLoad: true, index: 0); // Cargar la primera petición
-
-    // Inicialización de la lista principal de categorías
-    _productsByCategory = [
-      _mapaTodos,
-      _mapaRopa,
-      _mapaAccesorios,
-      _mapaAlimentos,
-      _mapaSalud,
-      _mapaArreglos,
-      _mapaDeportes,
-      _mapaTecnologia,
-      _mapaMascotas,
-      _mapaJuegos,
-      _mapaLibros,
-      _mapaArte,
-      _mapaOtros,
-    ];
-
-    // Inicialización de la lista de documentos
-    _productsSnapshot = [
-      _lastDocumentTodos,
-      _lastDocumentRopa,
-      _lastDocumentAccesorios,
-      _lastDocumentAlimentos,
-      _lastDocumentSalud,
-      _lastDocumentArreglos,
-      _lastDocumentDeportes,
-      _lastDocumentTecnologia,
-      _lastDocumentMascotas,
-      _lastDocumentJuegos,
-      _lastDocumentLibros,
-      _lastDocumentArte,
-      _lastDocumentOtros,
-    ];
+    _loadProducts();
   }
 
   Future<void> _checkUser() async {
-    // funcion para comprobar si hay un usuario logueado
     List<Usuario> usuarios = await DBHelper.queryUsuarios();
     if (usuarios.isNotEmpty) {
       setState(() {
@@ -134,30 +54,13 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
- Future<void> _loadProducts(
-    {bool isInitialLoad = false, int index = 0}) async {
-  //funcion para cargar los productos
-  if (!_hasMoreProducts && !isInitialLoad) return;
+  Future<void> _loadProducts() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference productsCollection = firestore.collection('products');
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  CollectionReference productsCollection = firestore.collection('products');
-
-  // Aplica el filtro de categoría aquí
-  Query query = productsCollection.limit(_pageSize);
-
-  if (_selectedCategory != null && _selectedCategory != 'Todos') {
-    query = query.where('category', isEqualTo: _selectedCategory);
-  }
-
-  if (_lastDocument != null && !isInitialLoad) {
-    query = query.startAfterDocument(_lastDocument!); 
-  }
-
-  QuerySnapshot snapshot = await query.get();
-
-  if (snapshot.docs.isNotEmpty) {
+    QuerySnapshot snapshot = await productsCollection.get();
     setState(() {
-      _products.addAll(snapshot.docs.map((doc) {
+      _products = snapshot.docs.map((doc) {
         return {
           'name': doc['name'],
           'description': doc['description'],
@@ -167,137 +70,51 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           'sellerId': doc['sellerId'],
           'sellerName': doc['sellerName'],
         };
-      }).toList());
-
+      }).toList();
       _allProducts = List.from(_products);
-      _productsByCategory[index] = _products;
-      _lastDocument = snapshot.docs.last;
-      _productsSnapshot[index] = _lastDocument;
-     
-
-      if (snapshot.docs.length < _pageSize) {
-        _hasMoreProducts = false;
-        _categoruesHasProducts[index] = false;
-      }
-    });
-  } else {
-    setState(() {
-      _hasMoreProducts = false;
-      _categoruesHasProducts[index] = false;
+      _products.shuffle();
+      _allProducts.shuffle();
     });
   }
-}
 
-  void _scrollListener() {
-    //funcion para el scrollListener
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _loadProducts();
-    }
-  }
-
-  // Propuesta de funcion para la barra de buqueda con paginacion
-  void _searchProducts(String query) async {
-    // Evitar ejecutar múltiples búsquedas mientras se carga
-    if (_isLoading) return;
-
+  @override
+  void _searchProducts(String query) {
     setState(() {
-      _isLoading = true;
-    });
-
-    setState(() {
-      _currentPage = 0; // Reiniciar la página al hacer una nueva búsqueda
-      _filteredProducts = []; // Limpiar productos filtrados
-      _hasMore = true; // Resetear el estado de más productos
-      _products.clear(); // Limpiar productos mostrados
-    });
-    if (query.isNotEmpty) {
-      final searchLower = query.toLowerCase();
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('products')
-          .where('name', isGreaterThanOrEqualTo: searchLower)
-          .where('name', isLessThanOrEqualTo: searchLower + '\uf8ff')
-          .get();
-      final products = querySnapshot.docs
-          .where((doc) {
-            final nameLower = doc['name'].toLowerCase();
-            final descriptionLower = doc['description'].toLowerCase();
-            return nameLower.contains(searchLower) ||
-                descriptionLower.contains(searchLower);
-          })
-          .map((doc) => doc.data())
-          .toList(); // Convertir a mapas
-
-      _filteredProducts = products; // Guardar los productos filtrados
-    } else {
-      // Si la consulta está vacía, cargar todos los productos
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('products').get();
-      _filteredProducts = querySnapshot.docs
-          .map((doc) => doc.data())
-          .toList(); // Convertir a mapas
-    }
-
-    // Cargar la primera página de productos después de filtrar
-    if (_hasMore) {
-      final startIndex = _currentPage * _pageSize;
-      final endIndex = startIndex + _pageSize;
-
-      if (startIndex < _filteredProducts.length) {
-        // Cargar productos a la lista
-        _products.addAll(_filteredProducts.sublist(
-            startIndex, endIndex.clamp(0, _filteredProducts.length)));
-        _currentPage++; // Aumentar la página actual
+      if (query.isEmpty) {
+        _products = List.from(_allProducts);
       } else {
-        _hasMore = false; // No hay más productos para cargar
-      }
-    }
+        final searchLower = query.toLowerCase();
+        _products = _allProducts.where((product) {
 
-    setState(() {
-      _isLoading = false; // Terminar la carga
+          final nameLower = product['name'].toLowerCase();
+          final categoryLower = product['category'].toLowerCase();
+          final descriptionLower = product['description'].toLowerCase();
+          final sellerNameLower = product['sellerName'].toLowerCase();
+
+          return nameLower.contains(searchLower) ||
+              categoryLower.contains(searchLower) ||
+              sellerNameLower.contains(searchLower) ||
+              descriptionLower.contains(searchLower);
+        }).toList();
+      }
     });
   }
 
-// Esta funciones se modificara a fin de que sean paginadas
- void _filterByCategory(String category, int index) {
-  setState(() {
-    _selectedCategory = category;
-    _selectedCategoryIndex = _categories.indexOf(category!);
-
-    // Reiniciar el último documento para evitar duplicados
-    _lastDocument = null;
-
-    // Reiniciar la bandera de más productos por si llegó al límite
-    _hasMoreProducts = true; 
-
-    // Limpiar la lista de productos antes de cargar una nueva categoría
-    _allProducts.clear(); 
-    _products.clear();
-
-    // Limpiar la búsqueda
-    controller.clear(); 
-
-    // Si tienes productos almacenados por categoría, puedes reiniciar aquí
-    _allProducts = _productsByCategory[index];
-    _products = _productsByCategory[index];
-
-    // Cargar productos de la nueva categoría
-    _loadProducts(isInitialLoad: true, index: index);
-  });
-}
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    controller.dispose();
-    super.dispose();
+  void _filterByCategory(String? category) {
+    setState(() {
+      if (category == 'Todos' || category == null) {
+        _products = List.from(_allProducts);
+      } else {
+        _products = _allProducts
+            .where((product) => product['category'] == category)
+            .toList();
+      }
+    });
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 33, 46, 127),
         foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Container(
@@ -308,7 +125,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               children: [
                 // Texto con borde amarillo (sin color interior)
                 Text(
-                  'Pumarket',
+                  '      Pumarket',
                   style: TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w700,
@@ -321,7 +138,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   ),
                 ),
                 Text(
-                  'Pumarket',
+                  '      Pumarket',
                   style: const TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w400,
@@ -379,12 +196,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           Positioned.fill(
             child: CustomPaint(
               painter:
-                  BackgroundPainter(), // La clase personalizada para el fondo
+                  BackgroundPainter(), // Tu clase personalizada para el fondo
             ),
           ),
           SingleChildScrollView(
-            controller:
-                _scrollController, // Controlador del scroll, NO ESTOY SEGURO DE PORQUE DEBE IR AQUI Y NO EN EL GRIDVIEW BUILDER PERO VA ACA (NO TOCAR)
             child: Column(
               children: [
                 ClipRRect(
@@ -413,15 +228,13 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           ),
                           child: TextField(
                             controller: controller,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 255, 211, 0),
-                            ),
                             decoration: InputDecoration(
                               hintText: 'Buscar producto...',
                               hintStyle: const TextStyle(
                                 color: Color.fromARGB(
                                     255, 255, 211, 0), // Letra amarilla
                               ),
+                              
                               prefixIcon: const Icon(
                                 Icons.search,
                                 color: Color.fromARGB(255, 255, 211, 0),
@@ -433,7 +246,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 0, horizontal: 20),
                             ),
-                            onSubmitted: (value) {
+                            style: const TextStyle(
+    color: Color.fromARGB(255, 255, 211, 0), // Texto amarillo
+  ),
+                            onChanged: (value) {
                               _searchProducts(value);
                             },
                           ),
@@ -505,7 +321,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                       _selectedCategory = category;
                                     });
                                     _filterByCategory(
-                                        category, index); // Filtrar productos
+                                        category); // Filtrar productos
                                   },
                                   child: Column(
                                     children: [
@@ -549,9 +365,89 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                _buildEmptyState(),
-                _buildProductGrid(),
+                const SizedBox(
+                    height: 10), // Espacio para el contenido del GridView
+                _products.isEmpty
+                    ? Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height - 240.0,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 80,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'No se encontraron productos',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Container(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height - 240.0,
+                        ),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Número de columnas
+                            crossAxisSpacing:
+                                8, // Espacio horizontal entre tarjetas
+                            mainAxisSpacing:
+                                8, // Espacio vertical entre tarjetas
+                            childAspectRatio:
+                                2 / 3, // Relación de aspecto de las tarjetas
+                          ),
+                          itemCount: _products.length,
+                          itemBuilder: (context, index) {
+                            final product = _products[index];
+
+                            return FadeInUp(
+                              duration:
+                                  Duration(milliseconds: 250 + index * 200),
+                              child: ProductCard(
+                                name: product['name'],
+                                description: product['description'],
+                                image: product['image'],
+                                price: product['price'],
+                                sellerId: product['sellerId'],
+                                sellerName: product['sellerName'],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductoPage(
+                                        name: product['name'],
+                                        description: product['description'],
+                                        image: product['image'],
+                                        price: product['price'],
+                                        category: product['category'],
+                                        sellerName: product['sellerName'],
+                                        sellerId: product['sellerId'],
+                                     
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
               ],
             ),
           ),
@@ -560,89 +456,72 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
-  Widget _buildEmptyState() {
-    // Verificar si hay productos
-    return _products.isEmpty
-        ? Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height - 240.0,
-            color: Colors.transparent,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 80,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'No se encontraron productos',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-        : Container();
-    print('pon se la come');
-  }
-
-  Widget _buildProductGrid() {
-    // Mostrar productos
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: MediaQuery.of(context).size.height - 240.0,
-      ),
-      child: GridView.builder(
-        // Controlador de scroll
-        shrinkWrap: true,
-        physics:
-            const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Número de columnas
-          crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
-          mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-          childAspectRatio: 2 / 3, // Relación de aspecto de las tarjetas
+  Widget _buildProductList() {
+    if (_products.isEmpty) {
+      return const Center(
+        child: Text(
+          'No se encontraron productos',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        itemCount: _products.length,
-        itemBuilder: (context, index) {
-          final product = _products[index];
+      );
+    }
 
-          return FadeInUp(
-            duration: Duration(milliseconds:150 + index * 100),
-            child: ProductCard(
-              name: product['name'],
-              description: product['description'],
-              image: product['image'],
-              price: product['price'],
-              sellerId: product['sellerId'],
-              sellerName: product['sellerName'],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductoPage(
-                      name: product['name'],
-                      description: product['description'],
-                      image: product['image'],
-                      price: product['price'],
-                      category: product['category'],
-                      sellerName: product['sellerName'],
-                      sellerId: product['sellerId'],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+    // Tamaño de la pantalla disponible
+    final size = MediaQuery.of(context).size;
+
+    // Calculamos el aspecto de las tarjetas
+    final cardWidth =
+        size.width / 2 - 16; // Ancho de la tarjeta (considerando margen)
+    final cardHeight =
+        cardWidth * 1.5; // Altura basada en la relación de aspecto
+
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // Número de columnas
+        crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
+        mainAxisSpacing: 8, // Espacio vertical entre tarjetas
+        childAspectRatio: cardWidth / cardHeight, // Relación de aspecto
       ),
+      itemCount: _products.length,
+      itemBuilder: (context, index) {
+        final product = _products[index];
+
+        // Añadimos un efecto de animación usando FadeIn o BounceIn
+        return FadeInUp(
+          // Puedes usar BounceIn, FadeIn, SlideIn, etc.
+          duration: Duration(
+              milliseconds:
+                  250 + index * 200), // Retraso en la animación por tarjeta
+          child: ProductCard(
+            name: product['name'],
+            description: product['description'],
+            image: product['image'],
+            price: product['price'],
+            sellerId: product['sellerId'],
+            sellerName: product['sellerName'],
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductoPage(
+                    name: product['name'],
+                    description: product['description'],
+                    image: product['image'],
+                    price: product['price'],
+                    category: product['category'],
+                    sellerName: product['sellerName'],
+                    sellerId: product['sellerId'],
+                    
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

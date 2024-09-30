@@ -74,10 +74,13 @@ class _AgregarProductoState extends State<AgregarProducto> {
     );
   }
 
+  
+
+
   Future<void> _registerProduct() async {
     if (_formKey.currentState?.validate() ?? false) {
       showLoadingDialog(context);
-
+     
       try {
         String imageUrl = '';
         if (_imagenFile != null) {
@@ -87,6 +90,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           final uploadTask = await storageRef.putFile(_imagenFile!);
           imageUrl = await uploadTask.ref.getDownloadURL();
         }
+        
         await FirebaseFirestore.instance.collection('products').add({
           'name': _nombreController.text,
           'category': _categoriaController.text,
@@ -96,6 +100,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           'sellerId': _currentUser?.id,
           "sellerName": _currentUser?.name,
         });
+
 
         Get.snackbar('Éxito', 'Producto registrado exitosamente');
 
