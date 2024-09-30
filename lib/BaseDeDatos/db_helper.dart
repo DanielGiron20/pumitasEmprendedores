@@ -24,13 +24,15 @@ class DBHelper {
           db.execute(
             "CREATE TABLE $_tableNameUsuarios("
             "id TEXT PRIMARY KEY,"
+            "UID TEXT,"
             "name TEXT,"
             "email TEXT,"
             "description TEXT,"
             "instagram TEXT,"
             "whatsapp TEXT,"
             "logo TEXT,"
-            "sede TEXT)",
+            "sede TEXT),"
+            "eneable INTEGER)",
           );
 
           // Tabla de Sedes

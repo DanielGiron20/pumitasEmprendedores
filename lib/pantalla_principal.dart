@@ -16,9 +16,26 @@ class PantallaPrincipal extends StatefulWidget {
 }
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
+  late List<DocumentSnapshot?> _productsSnapshot;
   Usuario? _currentUser;
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
+  // Definición de listas para cada categoría
+  List<Map<String, dynamic>> _mapaTodos = [];
+  List<Map<String, dynamic>> _mapaRopa = [];
+  List<Map<String, dynamic>> _mapaAccesorios = [];
+  List<Map<String, dynamic>> _mapaAlimentos = [];
+  List<Map<String, dynamic>> _mapaSalud = [];
+  List<Map<String, dynamic>> _mapaArreglos = [];
+  List<Map<String, dynamic>> _mapaDeportes = [];
+  List<Map<String, dynamic>> _mapaTecnologia = [];
+  List<Map<String, dynamic>> _mapaMascotas = [];
+  List<Map<String, dynamic>> _mapaJuegos = [];
+  List<Map<String, dynamic>> _mapaLibros = [];
+  List<Map<String, dynamic>> _mapaArte = [];
+  List<Map<String, dynamic>> _mapaOtros = [];
+  late List<List<Map<String, dynamic>>> _productsByCategory;
+
   final TextEditingController controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _selectedCategory = 'Todos';
@@ -41,16 +58,71 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   int _pageSize = 8; //Cantidad de productos por petición
   DocumentSnapshot? _lastDocument; //Ultimo documento cargado
+  DocumentSnapshot? _lastDocumentTodos;
+  DocumentSnapshot? _lastDocumentRopa;
+  DocumentSnapshot? _lastDocumentAccesorios;
+  DocumentSnapshot? _lastDocumentAlimentos;
+  DocumentSnapshot? _lastDocumentSalud;
+  DocumentSnapshot? _lastDocumentArreglos;
+  DocumentSnapshot? _lastDocumentDeportes;
+  DocumentSnapshot? _lastDocumentTecnologia;
+  DocumentSnapshot? _lastDocumentMascotas;
+  DocumentSnapshot? _lastDocumentJuegos;
+  DocumentSnapshot? _lastDocumentLibros;
+  DocumentSnapshot? _lastDocumentArte;
+  DocumentSnapshot? _lastDocumentOtros;
+
   bool _hasMoreProducts =
       true; //variable bandera para indicar si hay más productos que cargar
+  final List<bool> _categoruesHasProducts = List.generate(13, (_) => true);
+
+  // Variables globales para paginacion en la busqueda de productos por medio de la barra de busqueda
+  int _currentPage = 0;
+  List<Map<String, dynamic>> _filteredProducts =
+      []; // Productos filtrados para paginación
+  bool _isLoading = false; // Estado de carga
+  bool _hasMore = true; // Indica si hay más productos para cargar
 
   @override
   void initState() {
     super.initState();
     _checkUser();
-    _scrollController.addListener(
-        _scrollListener); // al cargar la app se carga el scrollListener
-    _loadProducts(isInitialLoad: true); //y se arga la primera petición
+    _scrollController.addListener(_scrollListener); // Cargar el scrollListener
+    _loadProducts(isInitialLoad: true, index: 0); // Cargar la primera petición
+
+    // Inicialización de la lista principal de categorías
+    _productsByCategory = [
+      _mapaTodos,
+      _mapaRopa,
+      _mapaAccesorios,
+      _mapaAlimentos,
+      _mapaSalud,
+      _mapaArreglos,
+      _mapaDeportes,
+      _mapaTecnologia,
+      _mapaMascotas,
+      _mapaJuegos,
+      _mapaLibros,
+      _mapaArte,
+      _mapaOtros,
+    ];
+
+    // Inicialización de la lista de documentos
+    _productsSnapshot = [
+      _lastDocumentTodos,
+      _lastDocumentRopa,
+      _lastDocumentAccesorios,
+      _lastDocumentAlimentos,
+      _lastDocumentSalud,
+      _lastDocumentArreglos,
+      _lastDocumentDeportes,
+      _lastDocumentTecnologia,
+      _lastDocumentMascotas,
+      _lastDocumentJuegos,
+      _lastDocumentLibros,
+      _lastDocumentArte,
+      _lastDocumentOtros,
+    ];
   }
 
   Future<void> _checkUser() async {
@@ -63,7 +135,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-  Future<void> _loadProducts({bool isInitialLoad = false}) async {
+  Future<void> _loadProducts(
+      {bool isInitialLoad = false, int index = 0}) async {
     //funcion para cargar los productos
     if (!_hasMoreProducts && !isInitialLoad)
       return; // Si ya no hay más productos, no cargara más
@@ -105,18 +178,23 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
         _allProducts =
             List.from(_products); // Actualizar la lista de todos los productos
+        _productsByCategory[index] =
+            _products; // Actualizar la lista de productos por categoría
         _lastDocument =
             snapshot.docs.last; // Actualizar el último documento cargado
+        _productsSnapshot[index] = _lastDocument;
 
         if (snapshot.docs.length < _pageSize) {
           //validar si hay mas productos que cargar
           _hasMoreProducts = false;
+          _categoruesHasProducts[index] = false;
         }
         //validar si hay mas productos que cargar dado el caso qie sea por categoría
       });
     } else {
       setState(() {
         _hasMoreProducts = false;
+        _categoruesHasProducts[index] = false;
       });
     }
   }
@@ -129,39 +207,83 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-  // Esta funciones se modificara a fin de que sean paginadas
-  void _searchProducts(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _products = List.from(_allProducts);
-      } else {
-        final searchLower = query.toLowerCase();
-        _products = _allProducts.where((product) {
-          final nameLower = product['name'].toLowerCase();
-          final categoryLower = product['category'].toLowerCase();
-          final descriptionLower = product['description'].toLowerCase();
+  // Propuesta de funcion para la barra de buqueda con paginacion
+  void _searchProducts(String query) async {
+    // Evitar ejecutar múltiples búsquedas mientras se carga
+    if (_isLoading) return;
 
-          return nameLower.contains(searchLower) ||
-              categoryLower.contains(searchLower) ||
-              descriptionLower.contains(searchLower);
-        }).toList();
+    setState(() {
+      _isLoading = true;
+    });
+
+    setState(() {
+      _currentPage = 0; // Reiniciar la página al hacer una nueva búsqueda
+      _filteredProducts = []; // Limpiar productos filtrados
+      _hasMore = true; // Resetear el estado de más productos
+      _products.clear(); // Limpiar productos mostrados
+    });
+    if (query.isNotEmpty) {
+      final searchLower = query.toLowerCase();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('name', isGreaterThanOrEqualTo: searchLower)
+          .where('name', isLessThanOrEqualTo: searchLower + '\uf8ff')
+          .get();
+      final products = querySnapshot.docs
+          .where((doc) {
+            final nameLower = doc['name'].toLowerCase();
+            final descriptionLower = doc['description'].toLowerCase();
+            return nameLower.contains(searchLower) ||
+                descriptionLower.contains(searchLower);
+          })
+          .map((doc) => doc.data())
+          .toList(); // Convertir a mapas
+
+      _filteredProducts = products; // Guardar los productos filtrados
+    } else {
+      // Si la consulta está vacía, cargar todos los productos
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('products').get();
+      _filteredProducts = querySnapshot.docs
+          .map((doc) => doc.data())
+          .toList(); // Convertir a mapas
+    }
+
+    // Cargar la primera página de productos después de filtrar
+    if (_hasMore) {
+      final startIndex = _currentPage * _pageSize;
+      final endIndex = startIndex + _pageSize;
+
+      if (startIndex < _filteredProducts.length) {
+        // Cargar productos a la lista
+        _products.addAll(_filteredProducts.sublist(
+            startIndex, endIndex.clamp(0, _filteredProducts.length)));
+        _currentPage++; // Aumentar la página actual
+      } else {
+        _hasMore = false; // No hay más productos para cargar
       }
+    }
+
+    setState(() {
+      _isLoading = false; // Terminar la carga
     });
   }
 
 // Esta funciones se modificara a fin de que sean paginadas
-  void _filterByCategory(String category) {
+  void _filterByCategory(String category, int index) {
     setState(() {
       _selectedCategory = category;
       _selectedCategoryIndex = _categories.indexOf(category!);
-      _lastDocument = null; // Reinicia el último documento
-      _hasMoreProducts =
-          true; // Reinicia la bandera de más productos por si llego al tope
-      _loadProducts(
-          isInitialLoad: true); // Cargar productos de la nueva categoría
+      _lastDocument = _productsSnapshot[index]; // Reinicia el último documento
+      _hasMoreProducts = _categoruesHasProducts[
+          index]; // Reinicia la bandera de más productos por si llego al tope
+      // Cargar productos de la nueva categoría
       controller.clear(); // Limpiar la búsqueda
-      _allProducts = [];
-      _products = [];
+      _allProducts = _productsByCategory[
+          index]; // Actualizar la lista de todos los productos
+      _products = _productsByCategory[index];
+      ;
+      _loadProducts(isInitialLoad: true, index: index);
     });
   }
 
@@ -176,6 +298,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 33, 46, 127),
         foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Container(
@@ -186,7 +309,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               children: [
                 // Texto con borde amarillo (sin color interior)
                 Text(
-                  '      Pumarket',
+                  'Pumarket',
                   style: TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w700,
@@ -199,7 +322,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   ),
                 ),
                 Text(
-                  '      Pumarket',
+                  'Pumarket',
                   style: const TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w400,
@@ -311,7 +434,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 0, horizontal: 20),
                             ),
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               _searchProducts(value);
                             },
                           ),
@@ -383,7 +506,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                       _selectedCategory = category;
                                     });
                                     _filterByCategory(
-                                        category); // Filtrar productos
+                                        category, index); // Filtrar productos
                                   },
                                   child: Column(
                                     children: [

@@ -14,6 +14,7 @@ class UsuarioController extends GetxController {
   // Método para agregar un usuario
   Future<void> addUsuario({
     required String id,
+    required String UID,
     required String name,
     required String email,
     required String description,
@@ -21,10 +22,12 @@ class UsuarioController extends GetxController {
     required String whatsapp,
     required String logo,
     required String sede,
+    required int eneable,
   }) async {
     try {
       Usuario usuario = Usuario(
         id: id,
+        UID: UID,
         name: name,
         email: email,
         description: description,
@@ -32,6 +35,7 @@ class UsuarioController extends GetxController {
         whatsapp: whatsapp,
         logo: logo,
         sede: sede,
+        eneable: eneable,
       );
 
       // Inserta el usuario en la base de datos

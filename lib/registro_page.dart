@@ -103,6 +103,7 @@ class _RegistroPageState extends State<RegistroPage> {
           'whatsapp': _whatsappController.text,
           'logo': logoUrl,
           'sede': _sedeController.text,
+          'eneable': 0,
         });
 
         // Mostrar un mensaje de éxito

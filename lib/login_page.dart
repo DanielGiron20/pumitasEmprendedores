@@ -79,12 +79,18 @@ class _LoginPageState extends State<LoginPage> {
           Get.snackbar('Error', 'Usuario no encontrado');
         } else {
           final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+          if (userData['eneable'] == 1) {
+            Get.snackbar('Error', 'Cuenta deshabilitada');
+            Navigator.of(context).pop();
+            return;
+          }
 
           Get.snackbar('Éxito', 'Inicio de sesión exitoso');
 
           // Crea el objeto Usuario
           Usuario usuario = Usuario(
             id: userQuery.docs.first.id,
+            UID: userId,
             name: userData['name'],
             email: userData['email'],
             description: userData['description'],
@@ -100,6 +106,7 @@ class _LoginPageState extends State<LoginPage> {
 
           await usuarioController.addUsuario(
             id: usuario.id,
+            UID: usuario.UID,
             name: usuario.name,
             email: usuario.email,
             description: usuario.description,
