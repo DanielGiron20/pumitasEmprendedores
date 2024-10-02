@@ -94,7 +94,9 @@ class _AgregarProductoState extends State<AgregarProducto> {
             .where((word) =>
                 word.length > 3) // Filtrar palabras mayores a 3 caracteres
             .map((word) => word.toLowerCase()) // Convertir a minúsculas
-            .toList();
+            .toList()
+            .toSet()
+            .toList(); // eliminar duplicados
 
         await FirebaseFirestore.instance
             .collection('products')

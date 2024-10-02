@@ -21,7 +21,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   List<Map<String, dynamic>> _allProducts = [];
   final TextEditingController controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   String? _selectedCategory;
   List _filteredProducts = [];
   int _selectedCategoryIndex = 0;
@@ -41,20 +41,23 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     'Otros'
   ];
 
- int _pageSize = 8; //Cantidad de productos por petición
+  int _pageSize = 8; //Cantidad de productos por petición
   DocumentSnapshot? _lastDocument; //Ultimo documento cargado
-  bool _hasMoreProducts = true; //variable bandera para indicar si hay más productos que cargar
-  
+
+  bool _hasMoreProducts =
+      true; //variable bandera para indicar si hay más productos que cargar
 
   @override
   void initState() {
     super.initState();
     _checkUser();
-    _scrollController.addListener(_scrollListener); // al cargar la app se carga el scrollListener
+    _scrollController.addListener(
+        _scrollListener); // al cargar la app se carga el scrollListener
     _loadProducts(isInitialLoad: true); //y se arga la primera petición
   }
 
-  Future<void> _checkUser() async { // funcion para comprobar si hay un usuario logueado
+  Future<void> _checkUser() async {
+    // funcion para comprobar si hay un usuario logueado
     List<Usuario> usuarios = await DBHelper.queryUsuarios();
     if (usuarios.isNotEmpty) {
       setState(() {
@@ -63,25 +66,30 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-  Future<void> _loadProducts({bool isInitialLoad = false}) async { //funcion para cargar los productos 
-    if (!_hasMoreProducts && !isInitialLoad) return; // Si ya no hay más productos, no cargara más
+  Future<void> _loadProducts({bool isInitialLoad = false}) async {
+    //funcion para cargar los productos
+    if (!_hasMoreProducts && !isInitialLoad)
+      return; // Si ya no hay más productos, no cargara más
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference productsCollection =
         firestore.collection('products').doc('vs products').collection('vs');
- // Referencia a la colección de productos
+    // Referencia a la colección de productos
 
-    Query query = productsCollection.limit(_pageSize); // Limitar a _pageSize productos
+    Query query =
+        productsCollection.limit(_pageSize); // Limitar a _pageSize productos
 
     if (_lastDocument != null && !isInitialLoad) {
-      query = query.startAfterDocument(_lastDocument!); // Empezar después del último documento cargado
+      query = query.startAfterDocument(
+          _lastDocument!); // Empezar después del último documento cargado
     }
 
     QuerySnapshot snapshot = await query.get();
 
     if (snapshot.docs.isNotEmpty) {
       setState(() {
-        _products.addAll(snapshot.docs.map((doc) { // Agregar los nuevos productos a la lista existente
+        _products.addAll(snapshot.docs.map((doc) {
+          // Agregar los nuevos productos a la lista existente
           return {
             'name': doc['name'],
             'description': doc['description'],
@@ -92,14 +100,16 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             'sellerName': doc['sellerName'],
             'fecha': doc['fecha'],
             'keywords': doc['keywords'],
-
           };
         }).toList());
 
-        _allProducts = List.from(_products); // Actualizar la lista de todos los productos
-        _lastDocument = snapshot.docs.last; // Actualizar el último documento cargado
+        _allProducts =
+            List.from(_products); // Actualizar la lista de todos los productos
+        _lastDocument =
+            snapshot.docs.last; // Actualizar el último documento cargado
 
-        if (snapshot.docs.length < _pageSize) { //validar si hay mas productos que cargar
+        if (snapshot.docs.length < _pageSize) {
+          //validar si hay mas productos que cargar
           _hasMoreProducts = false;
         }
       });
@@ -110,17 +120,17 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     }
   }
 
-
- void _scrollListener() {
-  if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-    if (_selectedCategory == null || _selectedCategory == 'Todos') {
-      _loadProducts();
-    } else {
-      _loadProductsByCategory(_selectedCategory!);
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      if (_selectedCategory == null || _selectedCategory == 'Todos') {
+        _loadProducts();
+      } else {
+        _loadProductsByCategory(_selectedCategory!);
+      }
     }
   }
-}
-  
+
   // Esta funciones se modificara a fin de que sean paginadas
   void _searchProducts(String query) {
     setState(() {
@@ -143,67 +153,66 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
 // Esta funciones se modificara a fin de que sean paginadas
   void _filterByCategory(String? category) async {
-  setState(() {
-    _selectedCategory = category;
-    _filteredProducts = [];
-  });
+    setState(() {
+      _selectedCategory = category;
+      _filteredProducts = [];
+      _hasMoreProducts = true; // Reiniciar la variable de más productos
+      _lastDocument = null; // Reiniciar el último documento cargado
+    });
 
-  if (category == 'Todos' || category == null) {
-    _loadProducts(isInitialLoad: true);
-  } else {
-    await _loadProductsByCategory(category);
+    if (category == 'Todos' || category == null) {
+      _products = []; // Limpiar la lista de productos
+      _loadProducts(isInitialLoad: true);
+    } else {
+      await _loadProductsByCategory(category);
+    }
   }
-}
 
-Future<void> _loadProductsByCategory(String category) async {
-  if (!_hasMoreProducts && _filteredProducts.isNotEmpty) return;
+  Future<void> _loadProductsByCategory(String category) async {
+    if (!_hasMoreProducts && _filteredProducts.isNotEmpty) return;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
- CollectionReference productsCollection =
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference productsCollection =
         firestore.collection('products').doc('vs products').collection('vs');
 
+    Query query = productsCollection
+        .where('category', isEqualTo: category)
+        .limit(_pageSize);
 
-  Query query = productsCollection
-      .where('category', isEqualTo: category)
-      .limit(_pageSize);
+    if (_lastDocument != null && _filteredProducts.isNotEmpty) {
+      query = query.startAfterDocument(_lastDocument!);
+    }
 
-  if (_lastDocument != null && _filteredProducts.isNotEmpty) {
-    query = query.startAfterDocument(_lastDocument!);
-  }
+    QuerySnapshot snapshot = await query.get();
 
-  QuerySnapshot snapshot = await query.get();
+    if (snapshot.docs.isNotEmpty) {
+      setState(() {
+        _filteredProducts.addAll(snapshot.docs.map((doc) {
+          return {
+            'name': doc['name'],
+            'description': doc['description'],
+            'image': doc['image'],
+            'price': doc['price'],
+            'category': doc['category'],
+            'sellerId': doc['sellerId'],
+            'sellerName': doc['sellerName'],
+            'fecha': doc['fecha'],
+            'keywords': doc['keywords'],
+          };
+        }).toList());
 
-  if (snapshot.docs.isNotEmpty) {
-    setState(() {
-      _filteredProducts.addAll(snapshot.docs.map((doc) {
-        return {
-          'name': doc['name'],
-          'description': doc['description'],
-          'image': doc['image'],
-          'price': doc['price'],
-          'category': doc['category'],
-          'sellerId': doc['sellerId'],
-          'sellerName': doc['sellerName'],
-          'fecha': doc['fecha'],
-          'keywords': doc['keywords'],
-        };
-      }).toList());
+        _lastDocument = snapshot.docs.last;
 
-      _lastDocument = snapshot.docs.last;
-
-      if (snapshot.docs.length < _pageSize) {
+        if (snapshot.docs.length < _pageSize) {
+          _hasMoreProducts = false;
+        }
+      });
+    } else {
+      setState(() {
         _hasMoreProducts = false;
-      }
-    });
-  } else {
-    setState(() {
-      _hasMoreProducts = false;
-    });
+      });
+    }
   }
-}
-
-
-
 
   @override
   void dispose() {
@@ -215,7 +224,7 @@ Future<void> _loadProductsByCategory(String category) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 33, 46, 127),
         foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Container(
@@ -301,7 +310,8 @@ Future<void> _loadProductsByCategory(String category) async {
             ),
           ),
           SingleChildScrollView(
-            controller: _scrollController, // Controlador del scroll, NO ESTOY SEGURO DE PORQUE DEBE IR AQUI Y NO EN EL GRIDVIEW BUILDER PERO VA ACA (NO TOCAR)
+            controller:
+                _scrollController, // Controlador del scroll, NO ESTOY SEGURO DE PORQUE DEBE IR AQUI Y NO EN EL GRIDVIEW BUILDER PERO VA ACA (NO TOCAR)
             child: Column(
               children: [
                 ClipRRect(
@@ -466,9 +476,9 @@ Future<void> _loadProductsByCategory(String category) async {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10), 
-_buildEmptyState(),
-_buildProductGrid(),
+                const SizedBox(height: 10),
+                _buildEmptyState(),
+                _buildProductGrid(),
               ],
             ),
           ),
@@ -477,92 +487,93 @@ _buildProductGrid(),
     );
   }
 
-
-  Widget _buildEmptyState() { // Verificar si hay productos
-   return
-    _products.isEmpty
-                    ? Container(
-                        width: double.infinity,
-                        height: MediaQuery.of(context).size.height - 240.0,
-                        color: Colors.transparent,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 80,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'No se encontraron productos',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : Container();
+  Widget _buildEmptyState() {
+    // Verificar si hay productos
+    return _products.isEmpty
+        ? Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height - 240.0,
+            color: Colors.transparent,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'No se encontraron productos',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        : Container();
   }
 
-  Widget _buildProductGrid() { // Mostrar productos
-   return 
-   Container(           
-  constraints: BoxConstraints(
-    minHeight: MediaQuery.of(context).size.height - 240.0,
-  ),
-  child: GridView.builder(  
-     // Controlador de scroll
-    shrinkWrap: true,
-    physics: const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
-    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2, // Número de columnas
-      crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
-      mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-      childAspectRatio: 2 / 3, // Relación de aspecto de las tarjetas
-    ),
-    itemCount: _selectedCategory == null || _selectedCategory == 'Todos'
-          ? _products.length
-          : _filteredProducts.length,
-      itemBuilder: (context, index) {
-        final product = _selectedCategory == null || _selectedCategory == 'Todos'
-            ? _products[index]
-            : _filteredProducts[index];
-       
-      return FadeInUp(
-        duration: Duration(milliseconds: 250 + index * 200),
-        child: ProductCard(
-          name: product['name'],
-          description: product['description'],
-          image: product['image'],
-          price: product['price'],
-          sellerId: product['sellerId'],
-          sellerName: product['sellerName'],
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductoPage(
-                  name: product['name'],
-                  description: product['description'],
-                  image: product['image'],
-                  price: product['price'],
-                  category: product['category'],
-                  sellerName: product['sellerName'],
-                  sellerId: product['sellerId'],
-                ),
-              ),
-            );
-          },
+  Widget _buildProductGrid() {
+    // Mostrar productos
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: MediaQuery.of(context).size.height - 240.0,
+      ),
+      child: GridView.builder(
+        // Controlador de scroll
+        shrinkWrap: true,
+        physics:
+            const ClampingScrollPhysics(), // Permitir scroll dentro del GridView
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // Número de columnas
+          crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
+          mainAxisSpacing: 8, // Espacio vertical entre tarjetas
+          childAspectRatio: 2 / 3, // Relación de aspecto de las tarjetas
         ),
-      );  
-    },
-  ),
-);
+        itemCount: _selectedCategory == null || _selectedCategory == 'Todos'
+            ? _products.length
+            : _filteredProducts.length,
+        itemBuilder: (context, index) {
+          final product =
+              _selectedCategory == null || _selectedCategory == 'Todos'
+                  ? _products[index]
+                  : _filteredProducts[index];
+
+          return FadeInUp(
+            duration: Duration(milliseconds: 250 + index * 200),
+            child: ProductCard(
+              name: product['name'],
+              description: product['description'],
+              image: product['image'],
+              price: product['price'],
+              sellerId: product['sellerId'],
+              sellerName: product['sellerName'],
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductoPage(
+                      name: product['name'],
+                      description: product['description'],
+                      image: product['image'],
+                      price: product['price'],
+                      category: product['category'],
+                      sellerName: product['sellerName'],
+                      sellerId: product['sellerId'],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
   }
 }
