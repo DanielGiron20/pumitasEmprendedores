@@ -74,13 +74,10 @@ class _AgregarProductoState extends State<AgregarProducto> {
     );
   }
 
-  
-
-
   Future<void> _registerProduct() async {
     if (_formKey.currentState?.validate() ?? false) {
       showLoadingDialog(context);
-     
+
       try {
         String imageUrl = '';
         if (_imagenFile != null) {
@@ -90,8 +87,20 @@ class _AgregarProductoState extends State<AgregarProducto> {
           final uploadTask = await storageRef.putFile(_imagenFile!);
           imageUrl = await uploadTask.ref.getDownloadURL();
         }
-        
-        await FirebaseFirestore.instance.collection('products').add({
+        String combinedText =
+            '${_nombreController.text}  ${_descripcionController.text}';
+        List<String> keywords = combinedText
+            .split(RegExp(r'\s+')) // Dividir en palabras
+            .where((word) =>
+                word.length > 3) // Filtrar palabras mayores a 3 caracteres
+            .map((word) => word.toLowerCase()) // Convertir a minúsculas
+            .toList();
+
+        await FirebaseFirestore.instance
+            .collection('products')
+            .doc('vs products')
+            .collection('vs')
+            .add({
           'name': _nombreController.text,
           'category': _categoriaController.text,
           'description': _descripcionController.text,
@@ -99,8 +108,9 @@ class _AgregarProductoState extends State<AgregarProducto> {
           'image': imageUrl,
           'sellerId': _currentUser?.id,
           "sellerName": _currentUser?.name,
+          'fecha': DateTime.now(),
+          'keywords': keywords,
         });
-
 
         Get.snackbar('Éxito', 'Producto registrado exitosamente');
 

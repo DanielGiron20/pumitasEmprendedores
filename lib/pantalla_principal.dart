@@ -56,7 +56,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   Future<void> _loadProducts() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference productsCollection = firestore.collection('products');
+    CollectionReference productsCollection =
+        firestore.collection('products').doc('vs products').collection('vs');
 
     QuerySnapshot snapshot = await productsCollection.get();
     setState(() {
@@ -69,15 +70,18 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           'category': doc['category'],
           'sellerId': doc['sellerId'],
           'sellerName': doc['sellerName'],
+          'fecha': doc['fecha'],
+          'keywords': doc['keywords'],
         };
       }).toList();
+      print(_products.first['fecha']);
+
       _allProducts = List.from(_products);
       _products.shuffle();
       _allProducts.shuffle();
     });
   }
 
-  @override
   void _searchProducts(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -85,7 +89,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       } else {
         final searchLower = query.toLowerCase();
         _products = _allProducts.where((product) {
-
           final nameLower = product['name'].toLowerCase();
           final categoryLower = product['category'].toLowerCase();
           final descriptionLower = product['description'].toLowerCase();
@@ -112,9 +115,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 33, 46, 127),
         foregroundColor: const Color.fromARGB(255, 255, 211, 0),
         title: Container(
@@ -125,7 +130,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               children: [
                 // Texto con borde amarillo (sin color interior)
                 Text(
-                  '      Pumarket',
+                  'Pumarket',
                   style: TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w700,
@@ -138,7 +143,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   ),
                 ),
                 Text(
-                  '      Pumarket',
+                  'Pumarket',
                   style: const TextStyle(
                     fontFamily: 'Coolvetica',
                     fontWeight: FontWeight.w400,
@@ -234,7 +239,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                 color: Color.fromARGB(
                                     255, 255, 211, 0), // Letra amarilla
                               ),
-                              
                               prefixIcon: const Icon(
                                 Icons.search,
                                 color: Color.fromARGB(255, 255, 211, 0),
@@ -247,8 +251,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                   vertical: 0, horizontal: 20),
                             ),
                             style: const TextStyle(
-    color: Color.fromARGB(255, 255, 211, 0), // Texto amarillo
-  ),
+                              color: Color.fromARGB(
+                                  255, 255, 211, 0), // Texto amarillo
+                            ),
                             onChanged: (value) {
                               _searchProducts(value);
                             },
@@ -367,6 +372,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                 ),
                 const SizedBox(
                     height: 10), // Espacio para el contenido del GridView
+
                 _products.isEmpty
                     ? Container(
                         width: double.infinity,
@@ -438,7 +444,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                         category: product['category'],
                                         sellerName: product['sellerName'],
                                         sellerId: product['sellerId'],
-                                     
                                       ),
                                     ),
                                   );
@@ -453,75 +458,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildProductList() {
-    if (_products.isEmpty) {
-      return const Center(
-        child: Text(
-          'No se encontraron productos',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-    }
-
-    // Tamaño de la pantalla disponible
-    final size = MediaQuery.of(context).size;
-
-    // Calculamos el aspecto de las tarjetas
-    final cardWidth =
-        size.width / 2 - 16; // Ancho de la tarjeta (considerando margen)
-    final cardHeight =
-        cardWidth * 1.5; // Altura basada en la relación de aspecto
-
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Número de columnas
-        crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
-        mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-        childAspectRatio: cardWidth / cardHeight, // Relación de aspecto
-      ),
-      itemCount: _products.length,
-      itemBuilder: (context, index) {
-        final product = _products[index];
-
-        // Añadimos un efecto de animación usando FadeIn o BounceIn
-        return FadeInUp(
-          // Puedes usar BounceIn, FadeIn, SlideIn, etc.
-          duration: Duration(
-              milliseconds:
-                  250 + index * 200), // Retraso en la animación por tarjeta
-          child: ProductCard(
-            name: product['name'],
-            description: product['description'],
-            image: product['image'],
-            price: product['price'],
-            sellerId: product['sellerId'],
-            sellerName: product['sellerName'],
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductoPage(
-                    name: product['name'],
-                    description: product['description'],
-                    image: product['image'],
-                    price: product['price'],
-                    category: product['category'],
-                    sellerName: product['sellerName'],
-                    sellerId: product['sellerId'],
-                    
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
     );
   }
 }

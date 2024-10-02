@@ -23,6 +23,8 @@ class ProductosVendedorPage extends StatelessWidget {
   Future<QuerySnapshot> _getSellerProducts() async {
     return await FirebaseFirestore.instance
         .collection('products')
+        .doc('vs products')
+        .collection('vs')
         .where('sellerId', isEqualTo: sellerId)
         .get();
   }
