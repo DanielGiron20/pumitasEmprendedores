@@ -59,7 +59,8 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           // El correo aún no ha sido verificado
           Get.snackbar(
-              'Error', 'Por favor, verifica tu correo antes de continuar');
+              'Error', 'Por favor, verifica tu correo antes de continuar',
+              backgroundColor: Colors.red, colorText: Colors.white);
           Navigator.of(context).pop();
           return;
         }
@@ -76,16 +77,19 @@ class _LoginPageState extends State<LoginPage> {
 
         if (userQuery.docs.isEmpty) {
           Navigator.of(context).pop();
-          Get.snackbar('Error', 'Usuario no encontrado');
+          Get.snackbar('Error', 'Usuario no encontrado',
+              backgroundColor: Colors.red, colorText: Colors.white);
         } else {
           final userData = userQuery.docs.first.data() as Map<String, dynamic>;
           if (userData['eneable'] == 1) {
-            Get.snackbar('Error', 'Cuenta deshabilitada');
+            Get.snackbar('Error', 'Cuenta deshabilitada',
+                backgroundColor: Colors.red, colorText: Colors.white);
             Navigator.of(context).pop();
             return;
           }
 
-          Get.snackbar('Éxito', 'Inicio de sesión exitoso');
+          Get.snackbar('Éxito', 'Inicio de sesión exitoso',
+              backgroundColor: Colors.green, colorText: Colors.white);
 
           // Crea el objeto Usuario
           Usuario usuario = Usuario(
@@ -132,7 +136,8 @@ class _LoginPageState extends State<LoginPage> {
         } else if (e.code == 'wrong-password') {
           message = 'Contraseña incorrecta';
         }
-        Get.snackbar('Error', message);
+        Get.snackbar('Error', message,
+            backgroundColor: Colors.red, colorText: Colors.white);
         print("Error: $e");
       } catch (e) {
         Navigator.of(context).pop();

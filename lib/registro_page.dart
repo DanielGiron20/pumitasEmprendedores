@@ -136,11 +136,15 @@ class _RegistroPageState extends State<RegistroPage> {
           'logo': logoUrl,
           'sede': _sedeController.text,
           'eneable': 0,
+          'reporte': 0,
+          'mf': 1,
         });
 
         // Mostrar un mensaje de éxito
         Get.snackbar('Verificación de correo',
-            'Se ha enviado un correo de verificación. Verifica tu correo antes de continuar.');
+            'Se ha enviado un correo de verificación. Verifica tu correo antes de continuar.',
+            backgroundColor: Color.fromARGB(255, 33, 46, 127),
+            colorText: Colors.white);
 
         // Restablecer el formulario
         _formKey.currentState?.reset();
@@ -156,7 +160,8 @@ class _RegistroPageState extends State<RegistroPage> {
         print("Error: $e");
       }
     } else {
-      Get.snackbar('Error', 'Por favor complete los campos correctamente');
+      Get.snackbar('Error', 'Por favor complete los campos correctamente',
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 

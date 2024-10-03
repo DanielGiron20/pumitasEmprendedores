@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/producto.dart';
@@ -57,12 +58,46 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 
   Future<void> _checkUser() async {
-    // funcion para comprobar si hay un usuario logueado
     List<Usuario> usuarios = await DBHelper.queryUsuarios();
     if (usuarios.isNotEmpty) {
-      setState(() {
-        _currentUser = usuarios.first;
-      });
+      // Buscamos al usuario en Firestore
+      final QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('sellers')
+          .where('email', isEqualTo: usuarios.first.email)
+          .limit(1)
+          .get();
+      final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+      if (userData['eneable'] == 1) {
+        _currentUser = null;
+        try {
+          List<Usuario> usuarios = await DBHelper.queryUsuarios();
+          if (usuarios.isNotEmpty) {
+            Usuario userToDelete = usuarios.first;
+            await DBHelper.deleteUsuario(userToDelete);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              MyRoutes.PantallaPrincipal.name,
+              (Route<dynamic> route) => false,
+            );
+          } else {
+            print("No hay usuarios disponibles para eliminar.");
+          }
+        } catch (e) {
+          print("Error al eliminar el usuario: $e");
+        }
+        Get.snackbar(
+          'Error',
+          'Cuenta deshabilitada',
+          backgroundColor: Colors.red, // Cambia el color de fondo
+          colorText: Colors.white, // Cambia el color del texto
+        );
+
+        return;
+      } else {
+        setState(() {
+          _currentUser = usuarios.first;
+        });
+      }
     }
   }
 
@@ -276,7 +311,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     GestureDetector(
                       onTap: () {
                         Navigator.pushNamed(
-                            context, MyRoutes.PerfilPersonal.name);
+                                context, MyRoutes.PerfilPersonal.name)
+                            .then((_) {
+                          _checkUser();
+                          _filterByCategory(_selectedCategory);
+                        });
                       },
                       child: Row(
                         children: [

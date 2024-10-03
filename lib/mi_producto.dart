@@ -130,32 +130,34 @@ class _MiProductoPageState extends State<MiProductoPage> {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
       try {
-        QuerySnapshot productQuery = await firestore.collection('products').doc('vs products').collection('vs')
+        QuerySnapshot productQuery = await firestore
+            .collection('products')
+            .doc('vs products')
+            .collection('vs')
             .where('name', isEqualTo: widget.name)
             .where('description', isEqualTo: widget.description)
-          .where('price', isEqualTo: widget.price)
-          .get();
+            .where('price', isEqualTo: widget.price)
+            .get();
 
         if (productQuery.docs.isNotEmpty) {
           String productDocId = productQuery.docs.first.id;
 
-          await firestore.collection('products').doc('vs products').collection('vs').doc(productDocId).delete();
+          await firestore
+              .collection('products')
+              .doc('vs products')
+              .collection('vs')
+              .doc(productDocId)
+              .delete();
 
-
-           FirebaseStorage.instance
-           .refFromURL(widget.image) 
-           .delete()
-           .then((_) {
-        print('Imagen eliminada exitosamente de Storage.');
-      }).catchError((error) {
-        print('Error al eliminar la imagen: $error');
-      });
+          FirebaseStorage.instance.refFromURL(widget.image).delete().then((_) {
+            print('Imagen eliminada exitosamente de Storage.');
+          }).catchError((error) {
+            print('Error al eliminar la imagen: $error');
+          });
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Producto borrado con éxito')),
           );
-
-      
 
           Navigator.pushReplacement(
             context,
@@ -165,7 +167,9 @@ class _MiProductoPageState extends State<MiProductoPage> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Producto no encontrado')),
+            const SnackBar(
+                content: Text('Producto no encontrado'),
+                backgroundColor: Colors.red),
           );
         }
       } catch (e) {
