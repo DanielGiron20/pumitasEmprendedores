@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
@@ -42,11 +43,42 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _logoFile = File(pickedFile.path);
-      });
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          maxWidth: 1000,
+          maxHeight: 1000,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Recortar imagen',
+              toolbarColor: const Color.fromARGB(255, 33, 46, 127),
+              toolbarWidgetColor: Colors.white,
+              activeControlsWidgetColor: const Color.fromARGB(255, 255, 211, 0),
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+              ],
+              lockAspectRatio: true,
+            ),
+            IOSUiSettings(
+              title: 'Recortar imagen',
+              aspectRatioLockEnabled: true,
+              minimumAspectRatio: 1.0,
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
+          setState(() {
+            _logoFile = File(croppedFile.path);
+          });
+        }
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Error al seleccionar o recortar la imagen');
+      print("Error al seleccionar o recortar la imagen: $e");
     }
   }
 

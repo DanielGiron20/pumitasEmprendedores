@@ -56,7 +56,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _loadProducts(isInitialLoad: true); //y se arga la primera petición
   }
 
-
   Future<void> _checkUser() async {
     // funcion para comprobar si hay un usuario logueado
     List<Usuario> usuarios = await DBHelper.queryUsuarios();
@@ -77,8 +76,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         firestore.collection('products').doc('vs products').collection('vs');
     // Referencia a la colección de productos
 
-    Query query =
-        productsCollection.orderBy('fecha', descending: true).limit(_pageSize); // Limitar a _pageSize productos
+    Query query = productsCollection
+        .orderBy('fecha', descending: true)
+        .limit(_pageSize); // Limitar a _pageSize productos
 
     if (_lastDocument != null && !isInitialLoad) {
       query = query.startAfterDocument(
@@ -162,7 +162,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
 
     if (category == 'Todos' || category == null) {
-      _products = []; // Limpiar la lista de productos
+      _products = []; // Limpiar la lista de productos|
       _loadProducts(isInitialLoad: true);
     } else {
       await _loadProductsByCategory(category);
@@ -177,8 +177,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         firestore.collection('products').doc('vs products').collection('vs');
 
     Query query = productsCollection
-        .where('category', isEqualTo: category).
-        orderBy('fecha', descending: true) .limit(_pageSize);
+        .where('category', isEqualTo: category)
+        .orderBy('fecha', descending: true)
+        .limit(_pageSize);
 
     if (_lastDocument != null && _filteredProducts.isNotEmpty) {
       query = query.startAfterDocument(_lastDocument!);

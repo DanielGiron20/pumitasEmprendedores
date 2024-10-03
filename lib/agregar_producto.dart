@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
@@ -47,11 +48,42 @@ class _AgregarProductoState extends State<AgregarProducto> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imagenFile = File(pickedFile.path);
-      });
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          maxWidth: 1000,
+          maxHeight: 1000,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Recortar imagen',
+              toolbarColor: const Color.fromARGB(255, 33, 46, 127),
+              toolbarWidgetColor: Colors.white,
+              activeControlsWidgetColor: const Color.fromARGB(255, 255, 211, 0),
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+              ],
+              lockAspectRatio: true,
+            ),
+            IOSUiSettings(
+              title: 'Recortar imagen',
+              aspectRatioLockEnabled: true,
+              minimumAspectRatio: 1.0,
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
+          setState(() {
+            _imagenFile = File(croppedFile.path);
+          });
+        }
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Error al seleccionar o recortar la imagen');
+      print("Error al seleccionar o recortar la imagen: $e");
     }
   }
 
@@ -158,43 +190,20 @@ class _AgregarProductoState extends State<AgregarProducto> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+        foregroundColor: const Color.fromARGB(255, 255, 211, 0),
+        title: const Text('Agregar Producto'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Stack(
           children: [
-            Container(
-              height: 300,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Color.fromARGB(255, 2, 0, 97),
-                  Color.fromARGB(255, 0, 1, 42),
-                ]),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.only(top: 60.0, left: 22),
-                child: Text(
-                  'Agregar Producto',
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 200.0),
-              child: Container(
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
-                  ),
-                  color: Colors.white,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18.0, vertical: 15),
+            ListView(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 0.50, vertical: 5),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -313,7 +322,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

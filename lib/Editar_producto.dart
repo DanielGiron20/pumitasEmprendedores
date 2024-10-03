@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/mis_productos.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
@@ -48,7 +49,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     _priceController = TextEditingController(text: widget.price.toString());
     _categoryController = TextEditingController(text: widget.category);
     _selectedCategory = widget.category;
-    
+
     print(widget.category);
   }
 
@@ -62,13 +63,41 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          maxWidth: 1000,
+          maxHeight: 1000,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Recortar imagen',
+              toolbarColor: const Color.fromARGB(255, 33, 46, 127),
+              toolbarWidgetColor: Colors.white,
+              activeControlsWidgetColor: const Color.fromARGB(255, 255, 211, 0),
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+              ],
+              lockAspectRatio: true,
+            ),
+            IOSUiSettings(
+              title: 'Recortar imagen',
+              aspectRatioLockEnabled: true,
+              minimumAspectRatio: 1.0,
+            ),
+          ],
+        );
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+        if (croppedFile != null) {
+          setState(() {
+            _imageFile = File(croppedFile.path);
+          });
+        }
+      }
+    } catch (e) {
+      print("Error al seleccionar o recortar la imagen: $e");
     }
   }
 
@@ -115,13 +144,15 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
           String? newImageUrl = widget.image;
           String? previousImageUrl = widget.image;
-        
 
           if (_imageFile != null) {
             newImageUrl = await _uploadImage(_imageFile!);
           }
 
-          QuerySnapshot productQuery = await firestore.collection('products').doc('vs products').collection('vs')
+          QuerySnapshot productQuery = await firestore
+              .collection('products')
+              .doc('vs products')
+              .collection('vs')
               .where('name', isEqualTo: widget.name)
               .where('description', isEqualTo: widget.description)
               .where('price', isEqualTo: widget.price)
@@ -131,7 +162,12 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           if (productQuery.docs.isNotEmpty) {
             String documentId = productQuery.docs.first.id;
 
-            await  firestore.collection('products').doc('vs products').collection('vs').doc(documentId).update({
+            await firestore
+                .collection('products')
+                .doc('vs products')
+                .collection('vs')
+                .doc(documentId)
+                .update({
               'name': _nameController.text,
               'description': _descriptionController.text,
               'price': double.parse(_priceController.text),
@@ -139,9 +175,13 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
               'image': newImageUrl,
             });
 
-             if (_imageFile != null && previousImageUrl != null && previousImageUrl != newImageUrl) {
-          await FirebaseStorage.instance.refFromURL(previousImageUrl).delete();
-        }
+            if (_imageFile != null &&
+                previousImageUrl != null &&
+                previousImageUrl != newImageUrl) {
+              await FirebaseStorage.instance
+                  .refFromURL(previousImageUrl)
+                  .delete();
+            }
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Producto actualizado con éxito')),
@@ -200,7 +240,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 icono: Icons.store,
                 show: false,
               ),
-             /* const SizedBox(height: 20),
+              /* const SizedBox(height: 20),
               CustomInputs(
                 controller: _categoryController,
                 validator: (valor) {
@@ -232,7 +272,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                value: _selectedCategory, 
+                value: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: _selectedCategory,
                   icon: Icon(Icons.category),
@@ -268,8 +308,6 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   return null;
                 },
               ),
-
-
               const SizedBox(height: 20),
               CustomInputs(
                 controller: _descriptionController,

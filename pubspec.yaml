@@ -47,6 +47,7 @@ dependencies:
   sqflite: ^2.3.3+1
   url_launcher: ^6.3.0
   animate_do: ^3.3.4
+  image_cropper: ^8.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -78,7 +79,6 @@ flutter:
       fonts:
         - asset: assets/fuente/Minecrafter.Alt.ttf
         - asset: assets/fuente/Minecrafter.Reg.ttf
-       
     - family: Coolvetica
       fonts:
         - asset: assets/fuente/coolvetica.otf
