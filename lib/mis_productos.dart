@@ -38,10 +38,13 @@ class _MisProductosState extends State<MisProductos> {
 
   Future<void> _loadProducts() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference productsCollection = firestore.collection('products');
+    CollectionReference productsCollection =
+        firestore.collection('products').doc('vs products').collection('vs');
+
 
     QuerySnapshot snapshot = await productsCollection
-        .where('sellerId', isEqualTo: _currentUser!.id)
+        .where('sellerId', isEqualTo: _currentUser!.id).
+        orderBy('fecha', descending: true)
         .get();
     setState(() {
       _products = snapshot.docs.map((doc) {
@@ -56,8 +59,8 @@ class _MisProductosState extends State<MisProductos> {
         };
       }).toList();
       _allProducts = List.from(_products);
-      _products.shuffle();
-      _allProducts.shuffle();
+      //_products.shuffle();
+      //_allProducts.shuffle();
     });
   }
 

@@ -124,10 +124,16 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
         try {
           FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+          String? previousImageUrl = _currentUser?.logo;
+        
+       
+
           String? newImageUrl = _currentUser?.logo;
           if (_imageFile != null) {
             newImageUrl = await _uploadImage(_imageFile!);
           }
+
+
 
           // Actualiza en Firebase
           await firestore.collection('sellers').doc(_currentUser!.id).update({
@@ -137,6 +143,10 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
             'instagram': _instagramController.text,
             'description': _descripcionController.text,
           });
+
+          if (_imageFile != null && previousImageUrl != null && previousImageUrl != newImageUrl) {
+          await FirebaseStorage.instance.refFromURL(previousImageUrl).delete();
+        }
 
           // Actualiza en la base de datos local usando el UsuarioController
           final usuarioController = UsuarioController();

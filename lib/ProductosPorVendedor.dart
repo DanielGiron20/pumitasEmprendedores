@@ -25,7 +25,8 @@ class ProductosVendedorPage extends StatelessWidget {
         .collection('products')
         .doc('vs products')
         .collection('vs')
-        .where('sellerId', isEqualTo: sellerId)
+        .where('sellerId', isEqualTo: sellerId).
+        orderBy('fecha', descending: true)
         .get();
   }
 
@@ -33,6 +34,163 @@ class ProductosVendedorPage extends StatelessWidget {
     final Uri uri = Uri.parse(url);
     launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+
+
+// show dialog para seleccionar razon de reporte, todavia no se hace nada con la razon es solo estetiica actualmente
+void _showReportDialog(BuildContext context, String sellerId) {
+  String? selectedReason;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0), 
+            ),
+            titlePadding: EdgeInsets.all(0),
+            title: Container(
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.redAccent, 
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.report, color: Colors.white), 
+                  SizedBox(width: 10),
+                  Text(
+                    'Reportar vendedor',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: Text('Contenido inapropiado'),
+                  value: 'Contenido inapropiado',
+                  groupValue: selectedReason,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedReason = value;
+                    });
+                  },
+                ),
+                RadioListTile<String>(
+                  title: Text('Fraude'),
+                  value: 'Fraude',
+                  groupValue: selectedReason,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedReason = value;
+                    });
+                  },
+                ),
+                RadioListTile<String>(
+                  title: Text('Incitación al odio'),
+                  value: 'Incitación al odio',
+                  groupValue: selectedReason,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedReason = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600], 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white, 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text('Enviar reporte'),
+                onPressed: () {
+                  if (selectedReason != null) {
+                    FirebaseFirestore.instance
+                        .collection('sellers')
+                        .doc(sellerId)
+                        .update({'reporte': FieldValue.increment(1)});
+                    
+                    Navigator.of(context).pop();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Reporte enviado correctamente'),
+                        backgroundColor: Colors.blue,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Por favor selecciona un motivo'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
+
+
+
+
+
+void _submitReport(BuildContext context, String sellerId, String reason) async {
+    try {
+      DocumentReference sellerDoc = FirebaseFirestore.instance
+          .collection('sellers')
+          .doc(sellerId);
+
+      await sellerDoc.update({
+        'reporte': FieldValue.increment(1),
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Reporte enviado correctamente'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al enviar el reporte'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +273,13 @@ class ProductosVendedorPage extends StatelessWidget {
                                         _launchUrl(instagramUrl);
                                       },
                                     ),
+                                    const SizedBox(width: 20),
+                 IconButton(
+                icon: const Icon(Icons.flag, color: Colors.red),
+                onPressed: () {
+                  _showReportDialog(context, sellerId); 
+                },
+                ),
                                 ],
                               ),
                             ],

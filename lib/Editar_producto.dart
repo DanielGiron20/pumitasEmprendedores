@@ -48,6 +48,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     _priceController = TextEditingController(text: widget.price.toString());
     _categoryController = TextEditingController(text: widget.category);
     _selectedCategory = widget.category;
+    
     print(widget.category);
   }
 
@@ -113,13 +114,14 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           FirebaseFirestore firestore = FirebaseFirestore.instance;
 
           String? newImageUrl = widget.image;
+          String? previousImageUrl = widget.image;
+        
 
           if (_imageFile != null) {
             newImageUrl = await _uploadImage(_imageFile!);
           }
 
-          QuerySnapshot productQuery = await firestore
-              .collection('products')
+          QuerySnapshot productQuery = await firestore.collection('products').doc('vs products').collection('vs')
               .where('name', isEqualTo: widget.name)
               .where('description', isEqualTo: widget.description)
               .where('price', isEqualTo: widget.price)
@@ -129,13 +131,17 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           if (productQuery.docs.isNotEmpty) {
             String documentId = productQuery.docs.first.id;
 
-            await firestore.collection('products').doc(documentId).update({
+            await  firestore.collection('products').doc('vs products').collection('vs').doc(documentId).update({
               'name': _nameController.text,
               'description': _descriptionController.text,
               'price': double.parse(_priceController.text),
               'category': _selectedCategory,
               'image': newImageUrl,
             });
+
+             if (_imageFile != null && previousImageUrl != null && previousImageUrl != newImageUrl) {
+          await FirebaseStorage.instance.refFromURL(previousImageUrl).delete();
+        }
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Producto actualizado con éxito')),
@@ -194,7 +200,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 icono: Icons.store,
                 show: false,
               ),
-              const SizedBox(height: 20),
+             /* const SizedBox(height: 20),
               CustomInputs(
                 controller: _categoryController,
                 validator: (valor) {
@@ -222,7 +228,48 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   'Arte',
                   'Otros'
                 ], // Lista de opciones para el Dropdown
+              ),*/
+
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory, 
+                decoration: InputDecoration(
+                  labelText: _selectedCategory,
+                  icon: Icon(Icons.category),
+                ),
+                items: [
+                  'Ropa',
+                  'Accesorios',
+                  'Alimentos',
+                  'Salud y belleza',
+                  'Arreglos y regalos',
+                  'Deportes',
+                  'Tecnologia',
+                  'Mascotas',
+                  'Juegos',
+                  'Libros',
+                  'Arte',
+                  'Otros'
+                ].map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                validator: (valor) {
+                  if (valor == null || valor.isEmpty) {
+                    return 'La categoría es obligatoria';
+                  }
+                  return null;
+                },
               ),
+
+
               const SizedBox(height: 20),
               CustomInputs(
                 controller: _descriptionController,

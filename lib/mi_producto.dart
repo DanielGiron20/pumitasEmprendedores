@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:pumitas_emprendedores/Editar_producto.dart';
 import 'package:pumitas_emprendedores/mis_productos.dart';
@@ -129,20 +130,32 @@ class _MiProductoPageState extends State<MiProductoPage> {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
       try {
-        QuerySnapshot productQuery = await firestore
-            .collection('products')
+        QuerySnapshot productQuery = await firestore.collection('products').doc('vs products').collection('vs')
             .where('name', isEqualTo: widget.name)
             .where('description', isEqualTo: widget.description)
-            .get();
+          .where('price', isEqualTo: widget.price)
+          .get();
 
         if (productQuery.docs.isNotEmpty) {
           String productDocId = productQuery.docs.first.id;
 
-          await firestore.collection('products').doc(productDocId).delete();
+          await firestore.collection('products').doc('vs products').collection('vs').doc(productDocId).delete();
+
+
+           FirebaseStorage.instance
+           .refFromURL(widget.image) 
+           .delete()
+           .then((_) {
+        print('Imagen eliminada exitosamente de Storage.');
+      }).catchError((error) {
+        print('Error al eliminar la imagen: $error');
+      });
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Producto borrado con éxito')),
           );
+
+      
 
           Navigator.pushReplacement(
             context,
