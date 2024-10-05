@@ -58,101 +58,115 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 
   Future<void> _checkUser() async {
-    List<Usuario> usuarios = await DBHelper.queryUsuarios();
-    if (usuarios.isNotEmpty) {
-      // Buscamos al usuario en Firestore
-      final QuerySnapshot userQuery = await FirebaseFirestore.instance
-          .collection('sellers')
-          .where('email', isEqualTo: usuarios.first.email)
-          .limit(1)
-          .get();
-      final userData = userQuery.docs.first.data() as Map<String, dynamic>;
-      if (userData['eneable'] == 1) {
-        _currentUser = null;
-        try {
-          List<Usuario> usuarios = await DBHelper.queryUsuarios();
-          if (usuarios.isNotEmpty) {
-            Usuario userToDelete = usuarios.first;
-            await DBHelper.deleteUsuario(userToDelete);
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              MyRoutes.PantallaPrincipal.name,
-              (Route<dynamic> route) => false,
-            );
-          } else {
-            print("No hay usuarios disponibles para eliminar.");
+    try {
+      List<Usuario> usuarios = await DBHelper.queryUsuarios();
+      if (usuarios.isNotEmpty) {
+        // Buscamos al usuario en Firestore
+        final QuerySnapshot userQuery = await FirebaseFirestore.instance
+            .collection('sellers')
+            .where('email', isEqualTo: usuarios.first.email)
+            .limit(1)
+            .get();
+        final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+        if (userData['eneable'] == 1) {
+          _currentUser = null;
+          try {
+            List<Usuario> usuarios = await DBHelper.queryUsuarios();
+            if (usuarios.isNotEmpty) {
+              Usuario userToDelete = usuarios.first;
+              await DBHelper.deleteUsuario(userToDelete);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                MyRoutes.PantallaPrincipal.name,
+                (Route<dynamic> route) => false,
+              );
+            } else {
+              print("No hay usuarios disponibles para eliminar.");
+            }
+          } catch (e) {
+            print("Error al eliminar el usuario: $e");
           }
-        } catch (e) {
-          print("Error al eliminar el usuario: $e");
-        }
-        Get.snackbar(
-          'Error',
-          'Cuenta deshabilitada',
-          backgroundColor: Colors.red, // Cambia el color de fondo
-          colorText: Colors.white, // Cambia el color del texto
-        );
+          Get.snackbar(
+            'Error',
+            'Cuenta deshabilitada',
+            backgroundColor: Colors.red, // Cambia el color de fondo
+            colorText: Colors.white, // Cambia el color del texto
+          );
 
-        return;
-      } else {
-        setState(() {
-          _currentUser = usuarios.first;
-        });
+          return;
+        } else {
+          setState(() {
+            _currentUser = usuarios.first;
+          });
+        }
       }
+    } catch (e) {
+      print(e);
     }
   }
 
   Future<void> _loadProducts({bool isInitialLoad = false}) async {
     //funcion para cargar los productos
-    if (!_hasMoreProducts && !isInitialLoad)
-      return; // Si ya no hay más productos, no cargara más
+    try {
+      if (!_hasMoreProducts && !isInitialLoad)
+        return; // Si ya no hay más productos, no cargara más
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference productsCollection =
-        firestore.collection('products').doc('vs products').collection('vs');
-    // Referencia a la colección de productos
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference productsCollection =
+          firestore.collection('products').doc('vs products').collection('vs');
+      // Referencia a la colección de productos
 
-    Query query = productsCollection
-        .orderBy('fecha', descending: true)
-        .limit(_pageSize); // Limitar a _pageSize productos
+      Query query = productsCollection
+          .orderBy('fecha', descending: true)
+          .limit(_pageSize); // Limitar a _pageSize productos
 
-    if (_lastDocument != null && !isInitialLoad) {
-      query = query.startAfterDocument(
-          _lastDocument!); // Empezar después del último documento cargado
-    }
+      if (_lastDocument != null && !isInitialLoad) {
+        query = query.startAfterDocument(
+            _lastDocument!); // Empezar después del último documento cargado
+      }
 
-    QuerySnapshot snapshot = await query.get();
+      QuerySnapshot snapshot = await query.get();
 
-    if (snapshot.docs.isNotEmpty) {
-      setState(() {
-        _products.addAll(snapshot.docs.map((doc) {
-          // Agregar los nuevos productos a la lista existente
-          return {
-            'name': doc['name'],
-            'description': doc['description'],
-            'image': doc['image'],
-            'price': doc['price'],
-            'category': doc['category'],
-            'sellerId': doc['sellerId'],
-            'sellerName': doc['sellerName'],
-            'fecha': doc['fecha'],
-            'keywords': doc['keywords'],
-          };
-        }).toList());
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          _products.addAll(snapshot.docs.map((doc) {
+            // Agregar los nuevos productos a la lista existente
+            return {
+              'name': doc['name'],
+              'description': doc['description'],
+              'image': doc['image'],
+              'price': doc['price'],
+              'category': doc['category'],
+              'sellerId': doc['sellerId'],
+              'sellerName': doc['sellerName'],
+              'fecha': doc['fecha'],
+              'keywords': doc['keywords'],
+            };
+          }).toList());
 
-        _allProducts =
-            List.from(_products); // Actualizar la lista de todos los productos
-        _lastDocument =
-            snapshot.docs.last; // Actualizar el último documento cargado
+          _allProducts = List.from(
+              _products); // Actualizar la lista de todos los productos
+          _lastDocument =
+              snapshot.docs.last; // Actualizar el último documento cargado
 
-        if (snapshot.docs.length < _pageSize) {
-          //validar si hay mas productos que cargar
+          if (snapshot.docs.length < _pageSize) {
+            //validar si hay mas productos que cargar
+            _hasMoreProducts = false;
+          }
+        });
+      } else {
+        setState(() {
           _hasMoreProducts = false;
-        }
-      });
-    } else {
-      setState(() {
-        _hasMoreProducts = false;
-      });
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error al cargar los productos',
+        backgroundColor: Colors.red, // Cambia el color de fondo
+        colorText: Colors.white, // Cambia el color del texto
+      );
+      print("Error al cargar los productos: $e");
     }
   }
 
@@ -168,26 +182,56 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 
   // Esta funciones se modificara a fin de que sean paginadas
-  void _searchProducts(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _products = List.from(_allProducts);
-      } else {
-        final searchLower = query.toLowerCase();
-        _products = _allProducts.where((product) {
-          final nameLower = product['name'].toLowerCase();
-          final categoryLower = product['category'].toLowerCase();
-          final descriptionLower = product['description'].toLowerCase();
+  void _searchProducts(String query) async {
+    try {
+      setState(() {
+        _products = [];
+      });
 
-          return nameLower.contains(searchLower) ||
-              categoryLower.contains(searchLower) ||
-              descriptionLower.contains(searchLower);
-        }).toList();
+      if (query.isEmpty) {
+        Get.snackbar('Error', 'Por favor, introduce una consulta',
+            backgroundColor: Colors.red, colorText: Colors.white);
+      } else {
+        final searchLower = query.toLowerCase().split(' ');
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        CollectionReference productsCollection = firestore
+            .collection('products')
+            .doc('vs products')
+            .collection('vs');
+
+        Query querySnapshot = productsCollection
+            .where('keywords', arrayContainsAny: searchLower)
+            .orderBy('name');
+
+        QuerySnapshot snapshot = await querySnapshot.get();
+
+        if (snapshot.docs.isNotEmpty) {
+          setState(() {
+            _products = snapshot.docs.map((doc) {
+              return {
+                'name': doc['name'],
+                'description': doc['description'],
+                'image': doc['image'],
+                'price': doc['price'],
+                'category': doc['category'],
+                'sellerId': doc['sellerId'],
+                'sellerName': doc['sellerName'],
+                'fecha': doc['fecha'],
+                'keywords': doc['keywords'],
+              };
+            }).toList();
+          });
+        } else {
+          setState(() {
+            _products = [];
+          });
+        }
       }
-    });
+    } catch (e) {
+      print(e);
+    }
   }
 
-// Esta funciones se modificara a fin de que sean paginadas
   void _filterByCategory(String? category) async {
     setState(() {
       _selectedCategory = category;
@@ -356,6 +400,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             child: Column(
               children: [
                 ClipRRect(
+                  clipBehavior: Clip.hardEdge,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(40.0),
                     bottomRight: Radius.circular(40.0),
@@ -401,7 +446,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 0, horizontal: 20),
                             ),
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               _searchProducts(value);
                             },
                           ),
