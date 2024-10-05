@@ -47,6 +47,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   bool _hasMoreProducts =
       true; //variable bandera para indicar si hay más productos que cargar
+  bool _loadPerfil = false;
 
   @override
   void initState() {
@@ -83,8 +84,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             } else {
               print("No hay usuarios disponibles para eliminar.");
             }
+            _loadPerfil = true;
           } catch (e) {
             print("Error al eliminar el usuario: $e");
+            _loadPerfil = true;
           }
           Get.snackbar(
             'Error',
@@ -97,12 +100,19 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         } else {
           setState(() {
             _currentUser = usuarios.first;
+            _loadPerfil = true;
           });
         }
+      } else {
+        setState(() {
+          _currentUser = null;
+          _loadPerfil = true;
+        });
       }
     } catch (e) {
       print(e);
     }
+    _loadPerfil = true;
   }
 
   Future<void> _loadProducts({bool isInitialLoad = false}) async {
@@ -184,10 +194,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   // Esta funciones se modificara a fin de que sean paginadas
   void _searchProducts(String query) async {
     try {
-      setState(() {
-        _products = [];
-      });
-
       if (query.isEmpty) {
         Get.snackbar('Error', 'Por favor, introduce una consulta',
             backgroundColor: Colors.red, colorText: Colors.white);
@@ -204,7 +210,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             .orderBy('name');
 
         QuerySnapshot snapshot = await querySnapshot.get();
-
+                setState(() {
+          _products = [];
+        });
         if (snapshot.docs.isNotEmpty) {
           setState(() {
             _products = snapshot.docs.map((doc) {
@@ -228,6 +236,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         }
       }
     } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        backgroundColor: Colors.red, // Cambia el color de fondo
+        colorText: Colors.white, // Cambia el color del texto
+      );
       print(e);
     }
   }
@@ -349,40 +363,52 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ),
         ),
         actions: [
-          _currentUser != null
-              ? Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                                context, MyRoutes.PerfilPersonal.name)
-                            .then((_) {
-                          _checkUser();
-                          _filterByCategory(_selectedCategory);
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(_currentUser!.logo),
-                            radius: 20,
-                            backgroundColor: const Color.fromARGB(
-                                255, 255, 211, 0), // Borde amarillo
+          _loadPerfil == true
+              ? _currentUser != null
+                  ? Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(
+                                    context, MyRoutes.PerfilPersonal.name)
+                                .then((_) {
+                              _checkUser();
+                              _filterByCategory(_selectedCategory);
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(_currentUser!.logo),
+                                radius: 20,
+                                backgroundColor: const Color.fromARGB(
+                                    255, 255, 211, 0), // Borde amarillo
+                              ),
+                              const SizedBox(width: 10),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                        ],
+                        ),
+                      ],
+                    )
+                  : IconButton(
+                      icon: const Icon(
+                        Icons.login,
+                        color:
+                            Color.fromARGB(255, 255, 211, 0), // Ícono amarillo
                       ),
-                    ),
-                  ],
-                )
-              : IconButton(
-                  icon: const Icon(
-                    Icons.login,
-                    color: Color.fromARGB(255, 255, 211, 0), // Ícono amarillo
+                      onPressed: () {
+                        Navigator.pushNamed(context, MyRoutes.Login.name);
+                      },
+                    )
+              : Container(
+                  width: 50, // adjust the size as needed
+                  height: 50, // adjust the size as needed
+                  child: CircularProgressIndicator(
+                    strokeWidth: 5, // adjust the thickness of the circle
+                    valueColor: AlwaysStoppedAnimation(
+                        Colors.white), // adjust the color
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, MyRoutes.Login.name);
-                  },
                 ),
         ],
       ),
