@@ -15,7 +15,6 @@ class ProductoPage extends StatefulWidget {
   final String category;
   final String sellerName;
   final String sellerId;
- 
 
   const ProductoPage({
     required this.name,
@@ -25,7 +24,6 @@ class ProductoPage extends StatefulWidget {
     required this.category,
     required this.sellerName,
     required this.sellerId,
-    
     Key? key,
   }) : super(key: key);
 

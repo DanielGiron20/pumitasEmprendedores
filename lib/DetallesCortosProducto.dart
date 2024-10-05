@@ -9,10 +9,14 @@ class ProductDetailPage extends StatelessWidget {
       : super(key: key);
 
   Future<DocumentSnapshot> _getProductDetails() async {
-    return await FirebaseFirestore.instance
-        .collection('products')
-        .doc(productId)
-        .get();
+    try {
+      return await FirebaseFirestore.instance
+          .collection('products')
+          .doc(productId)
+          .get();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

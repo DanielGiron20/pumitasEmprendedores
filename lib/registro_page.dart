@@ -101,6 +101,13 @@ class _RegistroPageState extends State<RegistroPage> {
     );
   }
 
+/*************  ✨ Codeium Command ⭐  *************/
+  /// Registra un nuevo vendedor en la base de datos. Primero verifica que los campos del formulario sean válidos.
+  /// Luego, registra el usuario en Firebase Auth y envía un correo de verificación.
+  /// Finalmente, guarda la información del vendedor en Firestore.
+  ///
+/******  5eb3f26a-64e0-4fd4-a408-015f9a01b123  *******/
+
   Future<void> registerSeller() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
@@ -164,73 +171,6 @@ class _RegistroPageState extends State<RegistroPage> {
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
-
-  /*Future<void> registerSeller() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      showLoadingDialog(context);
-      final QuerySnapshot nameQuery = await FirebaseFirestore.instance
-          .collection('sellers')
-          .where('name', isEqualTo: _nombreController.text)
-          .get();
-
-      if (nameQuery.docs.isNotEmpty) {
-        Navigator.of(context).pop();
-        Get.snackbar('Error', 'Ese Nombre de usuario ya existe');
-      } else {
-        try {
-          // Registrar el usuario en Firebase Auth
-          UserCredential userCredential =
-              await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: _correoController.text,
-            password: _contrasenaController.text,
-          );
-
-          // Enviar el correo de verificación
-          await userCredential.user!.sendEmailVerification();
-
-          String logoUrl = '';
-          if (_logoFile != null) {
-            final storageRef = FirebaseStorage.instance
-                .ref()
-                .child('logos/${DateTime.now().millisecondsSinceEpoch}.png');
-            final uploadTask = await storageRef.putFile(_logoFile!);
-            logoUrl = await uploadTask.ref.getDownloadURL();
-          }
-
-          DocumentReference sellerRef =
-              await FirebaseFirestore.instance.collection('sellers').add({
-            'uid': userCredential.user!.uid,
-            'name': _nombreController.text,
-            'email': _correoController.text,
-            'description': _descripcionController.text,
-            'instagram': _instagramController.text,
-            'whatsapp': _whatsappController.text,
-            'logo': logoUrl,
-            'sede': _sedeController.text,
-          });
-
-          // Mostrar un mensaje indicando que el usuario debe verificar su correo
-          Get.snackbar('Verificación de correo',
-              'Hemos enviado un correo de verificación a tu dirección de correo. Por favor, verifica tu correo antes de continuar.');
-
-          // Redirigir o esperar a que verifique su correo
-          _formKey.currentState?.reset();
-          setState(() {
-            _logoFile = null;
-          });
-
-          Navigator.of(context).pop();
-          Navigator.pop(context);
-        } catch (e) {
-          Navigator.of(context).pop();
-          Get.snackbar('Error', 'Error al registrar el vendedor');
-          print("Error: $e");
-        }
-      }
-    } else {
-      Get.snackbar('Error', 'Por favor complete los campos correctamente');
-    }
-  }*/
 
   void _validateEmail() async {
     String email = _correoController.text.trim();
@@ -317,6 +257,9 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor == null || valor.isEmpty) {
                               return 'El nombre es obligatorio';
                             }
+                            if (valor.length > 12) {
+                              return 'El nombre no puede tener más de 12 caracteres';
+                            }
                             if (valor.length < 3) {
                               return 'El nombre debe tener al menos 3 caracteres';
                             }
@@ -338,7 +281,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (!GetUtils.isEmail(valor)) {
                               return 'El correo no es válido';
                             }
-                            if (!valor.endsWith('@unah.hn') &&
+                            if (!valor.endsWith('@unah.hn') ||
                                 !valor.endsWith('@unah.edu.hn')) {
                               return 'El correo debe ser un correo institucional de la UNAH';
                             }
@@ -357,8 +300,11 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor == null || valor.isEmpty) {
                               return 'La descripción es obligatoria';
                             }
+                            if (valor.length > 100) {
+                              return 'La descripción no puede tener más de 100 caracteres';
+                            }
                             if (valor.length < 10) {}
-                            return null;
+                            return 'La descripción debe tener al menos 10 caracteres';
                           },
                           teclado: TextInputType.text,
                           hint: 'Ingrese una descripción del negocio',
@@ -402,8 +348,6 @@ class _RegistroPageState extends State<RegistroPage> {
                           show: false,
                           items: [
                             'Valle de Sula',
-                            'Ciudad Universitaria',
-                            'CURLA'
                           ],
                         ),
                         const SizedBox(height: 20),

@@ -25,6 +25,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   late TextEditingController _instagramController;
   late TextEditingController _descripcionController;
   File? _imageFile;
+  BuildContext? _dialogContext;
   Usuario? _currentUser; // Mueve _currentUser aquí
 
   @override
@@ -42,6 +43,25 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
     super.dispose();
   }
 
+  Future<void> showLoadingDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _dialogContext = context;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 100,
+            width: 100,
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _logout() async {
     try {
       List<Usuario> usuarios = await DBHelper.queryUsuarios();
@@ -57,19 +77,21 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   }
 
   Future<void> _checkUser() async {
-    List<Usuario> usuarios = await DBHelper.queryUsuarios();
-    if (usuarios.isNotEmpty) {
-      setState(() {
-        _currentUser = usuarios.first;
-        _userNameController = TextEditingController(text: _currentUser?.name);
-        _whatsappController =
-            TextEditingController(text: _currentUser?.whatsapp);
-        _instagramController =
-            TextEditingController(text: _currentUser?.instagram);
-        _descripcionController =
-            TextEditingController(text: _currentUser?.description);
-      });
-    }
+    try {
+      List<Usuario> usuarios = await DBHelper.queryUsuarios();
+      if (usuarios.isNotEmpty) {
+        setState(() {
+          _currentUser = usuarios.first;
+          _userNameController = TextEditingController(text: _currentUser?.name);
+          _whatsappController =
+              TextEditingController(text: _currentUser?.whatsapp);
+          _instagramController =
+              TextEditingController(text: _currentUser?.instagram);
+          _descripcionController =
+              TextEditingController(text: _currentUser?.description);
+        });
+      }
+    } catch (e) {}
   }
 
   Future<void> _pickImage() async {
@@ -253,6 +275,12 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
                             if (value == null || value.isEmpty) {
                               return 'El nombre de usuario es obligatorio';
                             }
+                            if (value.length < 3) {
+                              return 'El nombre de usuario debe tener al menos 3 caracteres';
+                            }
+                            if (value.length > 12) {
+                              return 'El nombre de usuario no puede tener más de 12 caracteres';
+                            }
                             return null;
                           },
                           teclado: TextInputType.text,
@@ -267,6 +295,12 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'La descripción es obligatoria';
+                            }
+                            if (value.length < 10) {
+                              return 'La descripción debe tener al menos 10 caracteres';
+                            }
+                            if (value.length > 100) {
+                              return 'La descripción no puede tener más de 100 caracteres';
                             }
                             return null;
                           },

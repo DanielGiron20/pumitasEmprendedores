@@ -144,6 +144,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           "sellerName": _currentUser?.name,
           'fecha': DateTime.now(),
           'keywords': keywords,
+          'views': [],
         });
 
         Get.snackbar('Éxito', 'Producto registrado exitosamente');
@@ -215,6 +216,12 @@ class _AgregarProductoState extends State<AgregarProducto> {
                             if (valor == null || valor.isEmpty) {
                               return 'El nombre es obligatorio';
                             }
+                            if (valor.length < 3) {
+                              return 'El nombre debe tener al menos 3 caracteres';
+                            }
+                            if (valor.length > 100) {
+                              return 'El nombre debe tener menos de 100 caracteres';
+                            }
                             return null;
                           },
                           teclado: TextInputType.text,
@@ -259,6 +266,12 @@ class _AgregarProductoState extends State<AgregarProducto> {
                             if (valor == null || valor.isEmpty) {
                               return 'La descripción es obligatoria';
                             }
+                            if (valor.length < 10) {
+                              return 'La descripción debe tener al menos 10 caracteres';
+                            }
+                            if (valor.length > 150) {
+                              return 'La descripción debe tener menos de 150 caracteres';
+                            }
                             return null;
                           },
                           teclado: TextInputType.text,
@@ -276,6 +289,9 @@ class _AgregarProductoState extends State<AgregarProducto> {
                             }
                             if (double.tryParse(valor) == null) {
                               return 'El precio debe ser un número';
+                            }
+                            if (double.parse(valor) <= 0) {
+                              return 'El precio debe ser un numero positivo';
                             }
                             return null;
                           },

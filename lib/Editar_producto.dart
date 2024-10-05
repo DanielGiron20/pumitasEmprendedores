@@ -173,6 +173,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
               'price': double.parse(_priceController.text),
               'category': _selectedCategory,
               'image': newImageUrl,
+              'fecha': DateTime.now(),
             });
 
             if (_imageFile != null &&
@@ -240,36 +241,6 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 icono: Icons.store,
                 show: false,
               ),
-              /* const SizedBox(height: 20),
-              CustomInputs(
-                controller: _categoryController,
-                validator: (valor) {
-                  if (_selectedCategory == null || _selectedCategory!.isEmpty) {
-                    return 'La categoría es obligatoria';
-                  }
-                  return null;
-                },
-                teclado: TextInputType.text,
-                hint: 'Seleccione la categoría del producto',
-                nombrelabel: 'Categoría',
-                icono: Icons.category,
-                show: false,
-                items: [
-                  'Ropa',
-                  'Accesorios',
-                  'Alimentos',
-                  'Salud y belleza',
-                  'Arreglos y regalos',
-                  'Deportes',
-                  'Tecnologia',
-                  'Mascotas',
-                  'Juegos',
-                  'Libros',
-                  'Arte',
-                  'Otros'
-                ], // Lista de opciones para el Dropdown
-              ),*/
-
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
@@ -315,6 +286,12 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   if (valor == null || valor.isEmpty) {
                     return 'La descripción es obligatoria';
                   }
+                  if (valor.length < 10) {
+                    return 'La descripción debe tener al menos 10 caracteres';
+                  }
+                  if (valor.length > 100) {
+                    return 'La descripción debe tener menos de 100 caracteres';
+                  }
                   return null;
                 },
                 teclado: TextInputType.text,
@@ -332,6 +309,9 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                   }
                   if (double.tryParse(valor) == null) {
                     return 'El precio debe ser un número';
+                  }
+                  if (double.parse(valor) <= 0) {
+                    return 'El precio debe ser positivo';
                   }
                   return null;
                 },

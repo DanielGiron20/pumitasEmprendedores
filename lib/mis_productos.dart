@@ -26,13 +26,21 @@ class _MisProductosState extends State<MisProductos> {
     _checkUser();
   }
 
+  /// Verifica si hay un usuario logueado, si es asi, carga sus productos en la
+  /// lista de productos y los muestra en la pantalla.
+  ///
+  /// Si no hay un usuario logueado, no hace nada.
   Future<void> _checkUser() async {
-    List<Usuario> usuarios = await DBHelper.queryUsuarios();
-    if (usuarios.isNotEmpty) {
-      setState(() {
-        _currentUser = usuarios.first;
-      });
-      _loadProducts();
+    try {
+      List<Usuario> usuarios = await DBHelper.queryUsuarios();
+      if (usuarios.isNotEmpty) {
+        setState(() {
+          _currentUser = usuarios.first;
+        });
+        _loadProducts();
+      }
+    } catch (e) {
+      print("Error al cargar el usuario: $e");
     }
   }
 
@@ -41,10 +49,9 @@ class _MisProductosState extends State<MisProductos> {
     CollectionReference productsCollection =
         firestore.collection('products').doc('vs products').collection('vs');
 
-
     QuerySnapshot snapshot = await productsCollection
-        .where('sellerId', isEqualTo: _currentUser!.id).
-        orderBy('fecha', descending: true)
+        .where('sellerId', isEqualTo: _currentUser!.id)
+        .orderBy('fecha', descending: true)
         .get();
     setState(() {
       _products = snapshot.docs.map((doc) {
