@@ -237,7 +237,7 @@ class _ProductoPageState extends State<ProductoPage>
                                   iconSize: 40,
                                   onPressed: () {
                                     final whatsappUrl =
-                                        'https://wa.me/${_sellerData!['whatsapp']}?text=${Uri.encodeComponent('Vi tu producto ${widget.name} en Pumitas Emprendedores y me interesó')}';
+                                        'https://wa.me/${_sellerData!['whatsapp']}?text=${Uri.encodeComponent('Vi tu producto ${widget.name} en Pumarket y me interesó')}';
                                     _launchUrl(whatsappUrl);
                                   },
                                 ),
