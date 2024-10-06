@@ -152,7 +152,7 @@ class _MisProductosState extends State<MisProductos> {
         crossAxisCount: 2, // Número de columnas
         crossAxisSpacing: 8, // Espacio horizontal entre tarjetas
         mainAxisSpacing: 8, // Espacio vertical entre tarjetas
-        childAspectRatio: cardWidth / cardHeight, // Relación de aspecto
+        childAspectRatio: 2 / 3, // Relación de aspecto
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {

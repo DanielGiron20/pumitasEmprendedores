@@ -7,11 +7,12 @@ class ProductDetailPage extends StatelessWidget {
 
   const ProductDetailPage({required this.productId, Key? key})
       : super(key: key);
-
   Future<DocumentSnapshot> _getProductDetails() async {
     try {
       return await FirebaseFirestore.instance
           .collection('products')
+          .doc('vs products')
+          .collection('vs')
           .doc(productId)
           .get();
     } catch (e) {

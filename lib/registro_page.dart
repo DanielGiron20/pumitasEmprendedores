@@ -281,7 +281,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (!GetUtils.isEmail(valor)) {
                               return 'El correo no es válido';
                             }
-                            if (!valor.endsWith('@unah.hn') ||
+                            if (!valor.endsWith('@unah.hn') &&
                                 !valor.endsWith('@unah.edu.hn')) {
                               return 'El correo debe ser un correo institucional de la UNAH';
                             }
@@ -303,8 +303,9 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor.length > 100) {
                               return 'La descripción no puede tener más de 100 caracteres';
                             }
-                            if (valor.length < 10) {}
-                            return 'La descripción debe tener al menos 10 caracteres';
+                            if (valor.length < 10) {
+                              return 'La descripción debe tener al menos 10 caracteres';
+                            }
                           },
                           teclado: TextInputType.text,
                           hint: 'Ingrese una descripción del negocio',

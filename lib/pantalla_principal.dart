@@ -210,7 +210,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             .orderBy('name');
 
         QuerySnapshot snapshot = await querySnapshot.get();
-                setState(() {
+        setState(() {
           _products = [];
         });
         if (snapshot.docs.isNotEmpty) {
