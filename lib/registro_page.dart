@@ -132,6 +132,10 @@ class _RegistroPageState extends State<RegistroPage> {
           logoUrl = await uploadTask.ref.getDownloadURL();
         }
 
+        if(_sedeController.text == ""){
+          _sedeController.text = "Valle de sula";
+        }
+
         // Guardar información del vendedor en Firestore
         await FirebaseFirestore.instance.collection('sellers').add({
           'uid': userCredential.user!.uid,
@@ -316,7 +320,14 @@ class _RegistroPageState extends State<RegistroPage> {
                         const SizedBox(height: 20),
                         CustomInputs(
                           controller: _whatsappController,
-                          validator: null,
+                          validator: (valor) {
+                            if (valor == null || valor.isEmpty) {
+                              return 'El número de WhatsApp es obligatorio';
+                            }
+                            if (valor.length != 8) {
+                            return "El número de WhatsApp debe tener 8 digitos";
+                            }
+                          },
                           teclado: TextInputType.phone,
                           hint: 'Ingrese el número de WhatsApp',
                           nombrelabel: 'WhatsApp',

@@ -137,7 +137,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
     try {
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('profile_images/${DateTime.now().toIso8601String()}');
+          .child('logos/${DateTime.now().toIso8601String()}');
       final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -149,80 +149,83 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   }
 
   Future<void> _saveProfileChanges() async {
-    bool confirmDelete = await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Editar Perfil'),
-          content: const Text(
-              '¿Estás seguro que desea guardar estos cambios en su perfil?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Sí'),
-            ),
-          ],
-        );
-      },
-    );
+  bool confirmSave = await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Editar Perfil'),
+        content: const Text('¿Estás seguro que deseas guardar estos cambios en tu perfil?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sí'),
+          ),
+        ],
+      );
+    },
+  );
 
-    if (confirmDelete == true) {
-      if (_formKey.currentState!.validate()) {
-        try {
-          FirebaseFirestore firestore = FirebaseFirestore.instance;
+  if (confirmSave == true) {
+    if (_formKey.currentState!.validate()) {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-          String? previousImageUrl = _currentUser?.logo;
+        // Guardar la URL de la imagen de perfil anterior
+        String? previousImageUrl = _currentUser?.logo;
 
-          String? newImageUrl = _currentUser?.logo;
-          if (_imageFile != null) {
-            newImageUrl = await _uploadImage(_imageFile!);
-          }
-
-          // Actualiza en Firebase
-          await firestore.collection('sellers').doc(_currentUser!.id).update({
-            'name': _userNameController.text,
-            'whatsapp': _whatsappController.text,
-            'logo': newImageUrl,
-            'instagram': _instagramController.text,
-            'description': _descripcionController.text,
-          });
-
-          if (_imageFile != null &&
-              previousImageUrl != null &&
-              previousImageUrl != newImageUrl) {
-            await FirebaseStorage.instance
-                .refFromURL(previousImageUrl)
-                .delete();
-          }
-
-          // Actualiza en la base de datos local usando el UsuarioController
-          final usuarioController = UsuarioController();
-          await usuarioController.updateUsuario(_currentUser!.id, {
-            'name': _userNameController.text,
-            'email': _currentUser!.email.toString(),
-            'description': _descripcionController.text,
-            'instagram': _instagramController.text,
-            'whatsapp': _whatsappController.text,
-            'logo': newImageUrl.toString(),
-            'sede': _currentUser!.sede.toString(),
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Perfil actualizado con éxito')),
-          );
-          Navigator.pop(context);
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al actualizar el perfil: $e')),
-          );
+        // Subir nueva imagen si existe
+        String? newImageUrl = _currentUser?.logo;
+        if (_imageFile != null) {
+          newImageUrl = await _uploadImage(_imageFile!);
         }
+
+        // Actualizar datos en Firebase
+        await firestore.collection('sellers').doc(_currentUser!.id).update({
+          'name': _userNameController.text,
+          'whatsapp': _whatsappController.text,
+          'logo': newImageUrl,
+          'instagram': _instagramController.text,
+          'description': _descripcionController.text,
+        });
+
+        // Si se subió una nueva imagen y la anterior existe, eliminar la imagen anterior
+        if (_imageFile != null &&
+            previousImageUrl != null &&
+            previousImageUrl != newImageUrl) {
+          await FirebaseStorage.instance.refFromURL(previousImageUrl).delete();
+        }
+
+        // Actualizar la base de datos local usando el UsuarioController
+        final usuarioController = UsuarioController();
+        await usuarioController.updateUsuario(_currentUser!.id, {
+          'name': _userNameController.text,
+          'email': _currentUser!.email.toString(),
+          'description': _descripcionController.text,
+          'instagram': _instagramController.text,
+          'whatsapp': _whatsappController.text,
+          'logo': newImageUrl.toString(),
+          'sede': _currentUser!.sede.toString(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Perfil actualizado con éxito')),
+        );
+
+        // Cerrar la pantalla después de guardar los cambios
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar el perfil: $e')),
+        );
       }
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

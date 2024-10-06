@@ -105,7 +105,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     try {
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('product_images/${DateTime.now().toIso8601String()}');
+          .child('products/${DateTime.now().toIso8601String()}');
       final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
