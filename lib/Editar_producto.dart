@@ -103,9 +103,8 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
   Future<String?> _uploadImage(File image) async {
     try {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('products/${DateTime.now().toIso8601String()}');
+      final storageRef = FirebaseStorage.instance.refFromURL(
+          'gs://pumitasemprendedores.appspot.com/products/${DateTime.now().toIso8601String()}');
       final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();

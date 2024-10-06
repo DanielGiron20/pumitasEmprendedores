@@ -125,14 +125,13 @@ class _RegistroPageState extends State<RegistroPage> {
 
         String logoUrl = '';
         if (_logoFile != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('logos/${DateTime.now().millisecondsSinceEpoch}.png');
+          final storageRef = FirebaseStorage.instance.refFromURL(
+              'gs://pumitasemprendedores.appspot.com/logos/${DateTime.now().toIso8601String()}');
           final uploadTask = await storageRef.putFile(_logoFile!);
           logoUrl = await uploadTask.ref.getDownloadURL();
         }
 
-        if(_sedeController.text == ""){
+        if (_sedeController.text == "") {
           _sedeController.text = "Valle de sula";
         }
 
@@ -261,8 +260,8 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor == null || valor.isEmpty) {
                               return 'El nombre es obligatorio';
                             }
-                            if (valor.length > 12) {
-                              return 'El nombre no puede tener más de 12 caracteres';
+                            if (valor.length > 20) {
+                              return 'El nombre no puede tener más de 20 caracteres';
                             }
                             if (valor.length < 3) {
                               return 'El nombre debe tener al menos 3 caracteres';
@@ -310,6 +309,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             if (valor.length < 10) {
                               return 'La descripción debe tener al menos 10 caracteres';
                             }
+                            return null;
                           },
                           teclado: TextInputType.text,
                           hint: 'Ingrese una descripción del negocio',
@@ -325,8 +325,9 @@ class _RegistroPageState extends State<RegistroPage> {
                               return 'El número de WhatsApp es obligatorio';
                             }
                             if (valor.length != 8) {
-                            return "El número de WhatsApp debe tener 8 digitos";
+                              return "El número de WhatsApp debe tener 8 digitos";
                             }
+                            return null;
                           },
                           teclado: TextInputType.phone,
                           hint: 'Ingrese el número de WhatsApp',

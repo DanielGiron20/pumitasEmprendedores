@@ -113,9 +113,8 @@ class _AgregarProductoState extends State<AgregarProducto> {
       try {
         String imageUrl = '';
         if (_imagenFile != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('products/${DateTime.now().millisecondsSinceEpoch}.png');
+          final storageRef = FirebaseStorage.instance.refFromURL(
+              'gs://pumitasemprendedores.appspot.com/products/${DateTime.now().toIso8601String()}');
           final uploadTask = await storageRef.putFile(_imagenFile!);
           imageUrl = await uploadTask.ref.getDownloadURL();
         }
