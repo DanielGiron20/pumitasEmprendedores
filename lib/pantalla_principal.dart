@@ -420,179 +420,196 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   BackgroundPainter(), // La clase personalizada para el fondo
             ),
           ),
-          SingleChildScrollView(
+          CustomScrollView(
             controller:
                 _scrollController, // Controlador del scroll, NO ESTOY SEGURO DE PORQUE DEBE IR AQUI Y NO EN EL GRIDVIEW BUILDER PERO VA ACA (NO TOCAR)
-            child: Column(
-              children: [
-                ClipRRect(
-                  clipBehavior: Clip.hardEdge,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(40.0),
-                    bottomRight: Radius.circular(40.0),
-                  ),
-                  child: Container(
-                    color: const Color.fromARGB(
-                        255, 33, 46, 127), // Color del "AppBar"
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    height: 150.0, // Tamaño total del "AppBar"
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        // Barra de búsqueda
-                        Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(0, 22, 11, 11),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: const Color.fromARGB(255, 255, 211, 0),
-                              width: 2.0, // Detalle en amarillo
-                            ),
-                          ),
-                          child: TextField(
-                            controller: controller,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 255, 211, 0),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Buscar producto...',
-                              hintStyle: const TextStyle(
-                                color: Color.fromARGB(
-                                    255, 255, 211, 0), // Letra amarilla
+            slivers: [
+              SliverAppBar(
+                backgroundColor: const Color.fromARGB(0, 33, 46, 127),
+                elevation: 0.0,
+                expandedHeight: 145.0, // Tamaño total del "SliverAppBar"
+                pinned: false, // Mantener el AppBar fijo
+                floating: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(40.0),
+                      bottomRight: Radius.circular(40.0),
+                    ),
+                    child: Container(
+                      color: const Color.fromARGB(
+                          255, 33, 46, 127), // Color del "AppBar"
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 10),
+                          // Barra de búsqueda
+                          Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(0, 22, 11, 11),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 255, 211, 0),
+                                width: 2.0, // Detalle en amarillo
                               ),
-                              prefixIcon: const Icon(
-                                Icons.search,
+                            ),
+                            child: TextField(
+                              controller: controller,
+                              style: const TextStyle(
                                 color: Color.fromARGB(255, 255, 211, 0),
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0, horizontal: 20),
-                            ),
-                            onSubmitted: (value) {
-                              _searchProducts(value);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Container(
-                          height: 80,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _categories.length,
-                            itemBuilder: (context, index) {
-                              String category = _categories[index];
-                              IconData icon;
-
-                              // Asignar íconos dependiendo de la categoría
-                              switch (category) {
-                                case 'Ropa':
-                                  icon = Icons.shopping_bag;
-                                  break;
-                                case 'Accesorios':
-                                  icon = Icons.watch;
-                                  break;
-                                case 'Alimentos':
-                                  icon = Icons.fastfood;
-                                  break;
-                                case 'Salud y belleza':
-                                  icon = Icons.favorite;
-                                  break;
-                                case 'Arreglos y regalos':
-                                  icon = Icons.cake;
-                                  break;
-                                case 'Deportes':
-                                  icon = Icons.sports_soccer;
-                                  break;
-                                case 'Tecnologia':
-                                  icon = Icons.devices;
-                                  break;
-                                case 'Mascotas':
-                                  icon = Icons.pets;
-                                  break;
-                                case 'Juegos':
-                                  icon = Icons.videogame_asset;
-                                  break;
-                                case 'Libros':
-                                  icon = Icons.book;
-                                  break;
-                                case 'Arte':
-                                  icon = Icons.palette;
-                                  break;
-                                case 'Otros':
-                                  icon = Icons.category;
-                                  break;
-                                default:
-                                  icon = Icons.all_inclusive;
-                                  break;
-                              }
-
-                              // Verificar si la categoría actual está seleccionada
-                              bool isSelected = _selectedCategoryIndex == index;
-
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedCategoryIndex =
-                                          index; // Actualiza la categoría seleccionada
-                                      _selectedCategory = category;
-                                    });
-                                    _filterByCategory(
-                                        category); // Filtrar productos
-                                  },
-                                  child: Column(
-                                    children: [
-                                      AnimatedContainer(
-                                        duration: Duration(milliseconds: 300),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? Color.fromARGB(255, 255, 211, 0)
-                                              : Colors
-                                                  .transparent, // Fondo amarillo para categoría seleccionada
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          icon,
-                                          color: isSelected
-                                              ? Color.fromARGB(255, 33, 46, 127)
-                                              : Color.fromARGB(
-                                                  255, 255, 211, 0),
-                                        ),
-                                        padding: EdgeInsets.all(8),
-                                      ),
-                                      AnimatedDefaultTextStyle(
-                                        duration: Duration(milliseconds: 300),
-                                        style: TextStyle(
-                                          color:
-                                              Color.fromARGB(255, 255, 211, 0),
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                        child: Text(category),
-                                      ),
-                                    ],
-                                  ),
+                              decoration: InputDecoration(
+                                hintText: 'Buscar producto...',
+                                hintStyle: const TextStyle(
+                                  color: Color.fromARGB(
+                                      255, 255, 211, 0), // Letra amarilla
                                 ),
-                              );
-                            },
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Color.fromARGB(255, 255, 211, 0),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 0, horizontal: 20),
+                              ),
+                              onSubmitted: (value) {
+                                _searchProducts(value);
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 15),
+                          SizedBox(
+                            height: 80,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _categories.length,
+                              itemBuilder: (context, index) {
+                                String category = _categories[index];
+                                IconData icon;
+
+                                // Asignar íconos dependiendo de la categoría
+                                switch (category) {
+                                  case 'Ropa':
+                                    icon = Icons.shopping_bag;
+                                    break;
+                                  case 'Accesorios':
+                                    icon = Icons.watch;
+                                    break;
+                                  case 'Alimentos':
+                                    icon = Icons.fastfood;
+                                    break;
+                                  case 'Salud y belleza':
+                                    icon = Icons.favorite;
+                                    break;
+                                  case 'Arreglos y regalos':
+                                    icon = Icons.cake;
+                                    break;
+                                  case 'Deportes':
+                                    icon = Icons.sports_soccer;
+                                    break;
+                                  case 'Tecnologia':
+                                    icon = Icons.devices;
+                                    break;
+                                  case 'Mascotas':
+                                    icon = Icons.pets;
+                                    break;
+                                  case 'Juegos':
+                                    icon = Icons.videogame_asset;
+                                    break;
+                                  case 'Libros':
+                                    icon = Icons.book;
+                                    break;
+                                  case 'Arte':
+                                    icon = Icons.palette;
+                                    break;
+                                  case 'Otros':
+                                    icon = Icons.category;
+                                    break;
+                                  default:
+                                    icon = Icons.all_inclusive;
+                                    break;
+                                }
+
+                                // Verificar si la categoría actual está seleccionada
+                                bool isSelected =
+                                    _selectedCategoryIndex == index;
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedCategoryIndex =
+                                            index; // Actualiza la categoría seleccionada
+                                        _selectedCategory = category;
+                                      });
+                                      _filterByCategory(
+                                          category); // Filtrar productos
+                                    },
+                                    child: Column(
+                                      children: [
+                                        AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? const Color.fromARGB(
+                                                    255, 255, 211, 0)
+                                                : Colors
+                                                    .transparent, // Fondo amarillo para categoría seleccionada
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            icon,
+                                            color: isSelected
+                                                ? const Color.fromARGB(
+                                                    255, 33, 46, 127)
+                                                : const Color.fromARGB(
+                                                    255, 255, 211, 0),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                        ),
+                                        AnimatedDefaultTextStyle(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          style: TextStyle(
+                                            color: const Color.fromARGB(
+                                                255, 255, 211, 0),
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                          child: Text(category),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                _buildEmptyState(),
-                _buildProductGrid(),
-              ],
-            ),
+              ),
+              SliverList(
+                delegate: SliverChildListDelegate(
+                  [
+                    _buildEmptyState(),
+                    _buildProductGrid(),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -115,7 +115,7 @@ class ProductCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      '\$$price',
+                      'L.$price',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

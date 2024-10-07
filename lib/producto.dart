@@ -118,7 +118,7 @@ class _ProductoPageState extends State<ProductoPage>
                       child: Image.network(
                         widget.image,
                         width: double.infinity,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       ),
                     ),
                     const SizedBox(height: 10),
