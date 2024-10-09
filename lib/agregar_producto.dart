@@ -144,6 +144,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           'fecha': DateTime.now(),
           'keywords': keywords,
           'views': [],
+          'images': [imageUrl],
         });
 
         Get.snackbar('Éxito', 'Producto registrado exitosamente');

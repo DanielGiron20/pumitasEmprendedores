@@ -179,6 +179,20 @@ class _MisProductosState extends State<MisProductos> {
                       sellerId: product['sellerId'],
                     ),
                   ),
+                ).then(
+                  (value) {
+                    if (value != null) {
+                      try {
+                        setState(() {
+                          _products = [];
+                          _allProducts = [];
+                          _loadProducts(); // Refresca la pantalla MisProductos
+                        });
+                      } catch (e) {
+                        print(e);
+                      }
+                    }
+                  },
                 );
               },
             ));

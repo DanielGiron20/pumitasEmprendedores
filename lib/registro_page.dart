@@ -341,7 +341,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           validator: null, // No hay validación específica
                           teclado: TextInputType.url,
                           hint: 'Ingrese el enlace de Instagram',
-                          nombrelabel: 'Instagram',
+                          nombrelabel: 'Usuario de Instagram',
                           icono: FontAwesomeIcons.instagram,
                           show: false,
                         ),

@@ -28,6 +28,26 @@ class MiProductoPage extends StatefulWidget {
   _MiProductoPageState createState() => _MiProductoPageState();
 }
 
+BuildContext? _dialogContext;
+Future<void> showLoadingDialog(BuildContext context) {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      _dialogContext = context;
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          alignment: Alignment.center,
+          height: 100,
+          width: 100,
+          child: const CircularProgressIndicator(),
+        ),
+      );
+    },
+  );
+}
+
 class _MiProductoPageState extends State<MiProductoPage> {
   @override
   Widget build(BuildContext context) {
@@ -90,7 +110,8 @@ class _MiProductoPageState extends State<MiProductoPage> {
   }
 
   Future<void> _editProduct() async {
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context)
+        .push(
       MaterialPageRoute(
         builder: (context) => EditarProductosPage(
           name: widget.name,
@@ -101,7 +122,16 @@ class _MiProductoPageState extends State<MiProductoPage> {
           sellerId: widget.sellerId,
         ),
       ),
-    );
+    )
+        .then((value) {
+      if (value != null) {
+        try {
+          Navigator.of(context).pop(value);
+        } catch (e) {
+          print(e);
+        }
+      }
+    });
   }
 
   Future<void> _deleteProduct() async {
@@ -127,6 +157,7 @@ class _MiProductoPageState extends State<MiProductoPage> {
     );
 
     if (confirmDelete) {
+      showLoadingDialog(context);
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
       try {
@@ -165,7 +196,9 @@ class _MiProductoPageState extends State<MiProductoPage> {
               builder: (context) => MisProductos(),
             ),
           );
+          Navigator.of(_dialogContext!).pop();
         } else {
+          Navigator.of(_dialogContext!).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text('Producto no encontrado'),
@@ -173,6 +206,7 @@ class _MiProductoPageState extends State<MiProductoPage> {
           );
         }
       } catch (e) {
+        Navigator.of(_dialogContext!).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al eliminar el producto: $e')),
         );

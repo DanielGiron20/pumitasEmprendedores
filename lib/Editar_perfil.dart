@@ -25,7 +25,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   late TextEditingController _instagramController;
   late TextEditingController _descripcionController;
   File? _imageFile;
-  BuildContext? _dialogContext;
+  late BuildContext _dialogContext;
   Usuario? _currentUser; // Mueve _currentUser aquí
 
   @override
@@ -170,6 +170,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
     );
 
     if (confirmSave == true) {
+      showLoadingDialog(context);
       if (_formKey.currentState!.validate()) {
         try {
           FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -217,9 +218,11 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
             const SnackBar(content: Text('Perfil actualizado con éxito')),
           );
 
+          Navigator.of(_dialogContext).pop();
           // Cerrar la pantalla después de guardar los cambios
           Navigator.pop(context);
         } catch (e) {
+          Navigator.of(_dialogContext).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error al actualizar el perfil: $e')),
           );

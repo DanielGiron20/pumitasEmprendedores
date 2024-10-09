@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pumitas_emprendedores/mis_productos.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class EditarProductosPage extends StatefulWidget {
@@ -40,6 +39,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
   late TextEditingController _categoryController;
   String? _selectedCategory;
   File? _imageFile;
+  late BuildContext _dialogContext;
 
   @override
   void initState() {
@@ -51,6 +51,25 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     _selectedCategory = widget.category;
 
     print(widget.category);
+  }
+
+  Future<void> showLoadingDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _dialogContext = context;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 100,
+            width: 100,
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -137,6 +156,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
     );
 
     if (confirmDelete == true) {
+      showLoadingDialog(context);
       if (_formKey.currentState!.validate()) {
         try {
           FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -146,6 +166,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
           if (_imageFile != null) {
             newImageUrl = await _uploadImage(_imageFile!);
+            Navigator.of(context).pop();
           }
 
           QuerySnapshot productQuery = await firestore
@@ -187,19 +208,21 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
               const SnackBar(content: Text('Producto actualizado con éxito')),
             );
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MisProductos(),
-              ),
-            );
+            Navigator.of(_dialogContext).pop(true);
+            Navigator.pop(context, {
+              setState(() {
+                _formKey.currentState!.validate();
+              })
+            });
           } else {
             print("No se encontro el producto");
+            Navigator.of(_dialogContext).pop();
           }
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error al actualizar el producto: $e')),
           );
+          Navigator.of(_dialogContext).pop();
         }
       }
     }
