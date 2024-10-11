@@ -332,6 +332,10 @@ class _AgregarProductoState extends State<AgregarProducto> {
                             }
                           },
                           child: const Text('Agregar Producto'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: const Color.fromARGB(255, 255, 211, 0), 
+                            backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+                          ),
                         ),
                         const SizedBox(height: 20),
                       ],
