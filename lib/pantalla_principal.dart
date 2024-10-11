@@ -45,8 +45,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   int _pageSize = 8; //Cantidad de productos por petición
   DocumentSnapshot? _lastDocument; //Ultimo documento cargado
 
-  bool _hasMoreProducts =
-      true; //variable bandera para indicar si hay más productos que cargar
+  bool _hasMoreProducts =true; //variable bandera para indicar si hay más productos que cargar
   bool _loadPerfil = false;
 
   @override

@@ -175,6 +175,89 @@ class _RegistroPageState extends State<RegistroPage> {
     }
   }
 
+
+void _showTerms(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            titlePadding: EdgeInsets.all(0),
+            title: Container(
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 57, 160, 212),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text(
+                    'Términos y Condiciones',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Términos y Condiciones de uso para vendedores\n\n'
+                    '1. Aceptación de los Términos: Al descargar, registrarse o utilizar la aplicación "Pumarket", desarrollada con el fin de facilitar el contacto entre vendedores y compradores, usted acepta y se compromete a cumplir estos términos y condiciones. Si no está de acuerdo con alguno de los términos, debe abstenerse de utilizar la aplicación.\n\n'
+                    '2. Al registrarse, usted acepta que sus datos proporcionados, incluyendo su contacto de teléfono, cuenta de Instagram (si es proporcionada), serán visibles públicamente para todos los usuarios de la aplicación.\n\n'
+                    'Esta información es necesaria para facilitar la comunicación entre vendedores y compradores. No nos hacemos responsables del uso que otros usuarios puedan hacer de esta información fuera de la plataforma.\n\n'
+                    '3. Contenido Subido por el Usuario: Al subir contenido, como imágenes o descripciones de productos, usted declara ser el propietario legítimo de dicho contenido y que no infringe los derechos de terceros. Nos reservamos el derecho de eliminar cualquier contenido que consideremos inapropiado o que infrinja estos términos.\n\n'
+                    '4. Responsabilidad del Usuario: Usted es el único responsable de la información que comparte en la aplicación y de las interacciones que tenga con otros usuarios. No somos responsables de las negociaciones, transacciones o conflictos que puedan surgir entre usuarios.\n\n'
+                    '5. Terminación del Servicio: Nos reservamos el derecho de suspender o eliminar su cuenta si se detecta un uso indebido de la plataforma o si incumple estos términos.\n\n'
+                    '6. Spam: La subida de un mismo producto repetidas veces sera visto como spam y sera eliminado.\n\n',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text('No acepto'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 34, 174, 226),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text('Si acepto'),
+                onPressed: () {
+                  registerSeller();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
   void _validateEmail() async {
     String email = _correoController.text.trim();
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -204,8 +287,7 @@ class _RegistroPageState extends State<RegistroPage> {
         ),
       );
     } else {
-      // Si todo es correcto, se procede a registrar
-      registerSeller();
+      _showTerms(context);
     }
   }
 
