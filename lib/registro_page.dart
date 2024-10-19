@@ -258,38 +258,53 @@ void _showTerms(BuildContext context) {
 }
 
 
-  void _validateEmail() async {
-    String email = _correoController.text.trim();
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('sellers')
-        .where('email', isEqualTo: email)
-        .get();
-
-    String name = _nombreController.text.trim();
-    QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
-        .collection('sellers')
-        .where('name', isEqualTo: name)
-        .get();
-
-    if (querySnapshot.docs.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El correo ya existe, por favor ingrese otro.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else if (querySnapshot2.docs.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('El nombre de usuario ya existe, por favor ingrese otro.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else {
-      _showTerms(context);
-    }
+void _validateEmail() async {
+  // Verificar si el formulario es válido
+  if (!(_formKey.currentState?.validate() ?? false)) {
+    // Si la validación falla, mostrar un mensaje de error y retornar
+    Get.snackbar(
+      'Error',
+      'Por favor complete los campos correctamente',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+    return; // Salir de la función si los campos no son válidos
   }
+
+  // Si los campos están bien, entonces proceder con las validaciones del correo y nombre
+  String email = _correoController.text.trim();
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('sellers')
+      .where('email', isEqualTo: email)
+      .get();
+
+  String name = _nombreController.text.trim();
+  QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
+      .collection('sellers')
+      .where('name', isEqualTo: name)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('El correo ya existe, por favor ingrese otro.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } else if (querySnapshot2.docs.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('El nombre de usuario ya existe, por favor ingrese otro.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } else {
+    // Si todo está bien, mostrar los términos y condiciones
+    _showTerms(context);
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
