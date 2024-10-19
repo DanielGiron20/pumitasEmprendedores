@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pumitas_emprendedores/wigets/custom_buttom.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class EditarProductosPage extends StatefulWidget {
@@ -144,23 +145,23 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
           actions: [
             TextButton(
               style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey[600],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
+              ),
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
               style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey[600],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
+              ),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),
@@ -358,10 +359,12 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
                 show: false,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                child: const Text('Guardar cambios'),
-              ),
+              CustomButton(
+                  onPressed: _saveChanges,
+                  label: "Guardar Cambios",
+                  backgroundColor: const Color.fromARGB(255, 33, 46, 127),
+                  textColor: const Color.fromARGB(255, 255, 211, 0),
+                  icon: Icons.save),
             ],
           ),
         ),

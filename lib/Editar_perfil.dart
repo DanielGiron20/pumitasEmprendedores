@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -9,6 +10,7 @@ import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario_controller.dart';
 import 'package:pumitas_emprendedores/wigets/background_painter.dart';
+import 'package:pumitas_emprendedores/wigets/custom_buttom.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class EditarPerfilPage extends StatefulWidget {
@@ -73,6 +75,41 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
       }
     } catch (e) {
       print("Error al eliminar el usuario: $e");
+    }
+  }
+
+  Future<void> _changePassword() async {
+    bool confirmChange = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+              '¿Estás seguro de cambiar la contraseña?,Te enviaremos un correo a tu correo electronico'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: const Text('Sí'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmChange) {
+      try {
+        FirebaseAuth auth = FirebaseAuth.instance;
+        await auth.sendPasswordResetEmail(email: _currentUser!.email);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Correo enviado'),
+          ),
+        );
+      } catch (e) {
+        print("Error al enviar el correo: $e");
+      }
     }
   }
 
@@ -348,19 +385,24 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
                           show: false,
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 33, 46, 127),
-                            foregroundColor:
-                                const Color.fromARGB(255, 255, 211, 0),
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
+                        CustomButton(
                           onPressed: _saveProfileChanges,
-                          child: const Text('Guardar cambios'),
+                          backgroundColor:
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
+                          label: 'Guardar cambios',
+                          icon: Icons.save,
+                        ),
+                        const SizedBox(height: 10),
+                        CustomButton(
+                          onPressed: () {
+                            _changePassword();
+                          },
+                          backgroundColor:
+                              const Color.fromARGB(255, 33, 46, 127),
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
+                          label: 'Cambiar contraseña',
+                          icon: Icons.lock,
                         ),
                       ],
                     ),

@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/db_helper.dart';
 import 'package:pumitas_emprendedores/BaseDeDatos/usuario.dart';
 import 'package:pumitas_emprendedores/rutas.dart';
+import 'package:pumitas_emprendedores/wigets/custom_buttom.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class AgregarProducto extends StatefulWidget {
@@ -315,7 +316,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton(
+                        CustomButton(
                           onPressed: () {
                             if (_formKey.currentState?.validate() ?? false) {
                               if (_imagenFile == null) {
@@ -331,11 +332,11 @@ class _AgregarProductoState extends State<AgregarProducto> {
                               }
                             }
                           },
-                          child: const Text('Agregar Producto'),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: const Color.fromARGB(255, 255, 211, 0), 
-                            backgroundColor: const Color.fromARGB(255, 33, 46, 127),
-                          ),
+                          label: 'Agregar Producto',
+                          textColor: const Color.fromARGB(255, 255, 211, 0),
+                          backgroundColor:
+                              const Color.fromARGB(255, 33, 46, 127),
+                          icon: Icons.add,
                         ),
                         const SizedBox(height: 20),
                       ],

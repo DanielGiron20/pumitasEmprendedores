@@ -149,6 +149,59 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _changePassword() async {
+    String? email;
+
+    email = await showDialog<String?>(
+      context: context,
+      builder: (context) {
+        String emailInput = '';
+        return AlertDialog(
+          title: const Text('Ingresa tu correo electrónico'),
+          content: TextField(
+            onChanged: (value) {
+              emailInput = value;
+            },
+            decoration: const InputDecoration(
+              hintText: 'Correo electrónico',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(null), // Cancelar
+            ),
+            TextButton(
+              child: const Text('Enviar'),
+              onPressed: () => Navigator.of(context)
+                  .pop(emailInput), // Enviar el correo ingresado
+            ),
+          ],
+        );
+      },
+    );
+
+    if (email != null && email.isNotEmpty) {
+      try {
+        FirebaseAuth auth = FirebaseAuth.instance;
+        await auth.sendPasswordResetEmail(email: email);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Correo enviado'),
+          ),
+        );
+      } catch (e) {
+        print("Error al enviar el correo: $e");
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor ingresa un correo válido'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,6 +319,24 @@ class _LoginPageState extends State<LoginPage> {
                                 },
                                 child: const Text(
                                   "Regístrate",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                      color: Colors.black),
+                                ),
+                              ),
+                              const Text(
+                                "¿Olvidaste tu contraseña?",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _changePassword();
+                                },
+                                child: const Text(
+                                  "Restablecer contraseña",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 17,
