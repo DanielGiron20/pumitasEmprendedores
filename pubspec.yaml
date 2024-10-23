@@ -47,6 +47,7 @@ dependencies:
   sqflite: ^2.3.3+1
   url_launcher: ^6.3.0
   animate_do: ^3.3.4
+  flutter_native_splash: ^2.4.1
   image_cropper: ^8.0.2
 dev_dependencies:
   flutter_test:

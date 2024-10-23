@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pumitas_emprendedores/wigets/custom_buttom.dart';
 import 'package:pumitas_emprendedores/wigets/custom_imputs.dart';
 
 class RegistroPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _RegistroPageState extends State<RegistroPage> {
   final _picker = ImagePicker();
   final _sedeController = TextEditingController();
   File? _logoFile;
-  BuildContext? _dialogContext;
+  late BuildContext _dialogContext;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -147,25 +148,26 @@ class _RegistroPageState extends State<RegistroPage> {
           'sede': _sedeController.text,
           'eneable': 0,
           'reporte': 0,
-          'mf': 1,
+          'mf': 0,
         });
-
-        // Mostrar un mensaje de éxito
-        Get.snackbar('Verificación de correo',
-            'Se ha enviado un correo de verificación. Verifica tu correo antes de continuar.',
-            backgroundColor: Color.fromARGB(255, 33, 46, 127),
-            colorText: Colors.white);
 
         // Restablecer el formulario
         _formKey.currentState?.reset();
         setState(() {
           _logoFile = null;
         });
+        // Mostrar un mensaje de éxito
+        Get.snackbar('Confirmacion de correo',
+            'Se ha enviado un correo de verificación.Ve a tu correo institucional antes de continuar para verificar que te pertenece.',
+            backgroundColor: Color.fromARGB(255, 33, 46, 127),
+            colorText: Colors.white);
 
         Navigator.of(context).pop();
         Navigator.pop(context);
+        Navigator.pop(context);
       } catch (e) {
         Navigator.of(context).pop();
+        Navigator.pop(context);
         Get.snackbar('Error', 'Error al registrar el vendedor');
         print("Error: $e");
       }
@@ -175,136 +177,134 @@ class _RegistroPageState extends State<RegistroPage> {
     }
   }
 
+  void _showTerms(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              titlePadding: EdgeInsets.all(0),
+              title: Container(
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 57, 160, 212),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(15.0)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text(
+                      'Términos y Condiciones',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Términos y Condiciones de uso para vendedores\n\n'
+                      '1. Aceptación de los Términos: Al descargar, registrarse o utilizar la aplicación "Pumarket", desarrollada con el fin de facilitar el contacto entre vendedores y compradores, usted acepta y se compromete a cumplir estos términos y condiciones. Si no está de acuerdo con alguno de los términos, debe abstenerse de utilizar la aplicación.\n\n'
+                      '2. Al registrarse, usted acepta que sus datos proporcionados, incluyendo su contacto de teléfono, cuenta de Instagram (si es proporcionada), serán visibles públicamente para todos los usuarios de la aplicación.\n\n'
+                      'Esta información es necesaria para facilitar la comunicación entre vendedores y compradores. No nos hacemos responsables del uso que otros usuarios puedan hacer de esta información fuera de la plataforma.\n\n'
+                      '3. Contenido Subido por el Usuario: Al subir contenido, como imágenes o descripciones de productos, usted declara ser el propietario legítimo de dicho contenido y que no infringe los derechos de terceros. Nos reservamos el derecho de eliminar cualquier contenido que consideremos inapropiado o que infrinja estos términos.\n\n'
+                      '4. Responsabilidad del Usuario: Usted es el único responsable de la información que comparte en la aplicación y de las interacciones que tenga con otros usuarios. No somos responsables de las negociaciones, transacciones o conflictos que puedan surgir entre usuarios.\n\n'
+                      '5. Terminación del Servicio: Nos reservamos el derecho de suspender o eliminar su cuenta si se detecta un uso indebido de la plataforma o si incumple estos términos.\n\n'
+                      '6. Spam: La subida de un mismo producto repetidas veces sera visto como spam y sera eliminado.\n\n',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.grey[600],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: Text('No acepto'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 34, 174, 226),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: Text('Si acepto'),
+                  onPressed: () {
+                    registerSeller();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
-void _showTerms(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            titlePadding: EdgeInsets.all(0),
-            title: Container(
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 57, 160, 212),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Términos y Condiciones',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ],
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Términos y Condiciones de uso para vendedores\n\n'
-                    '1. Aceptación de los Términos: Al descargar, registrarse o utilizar la aplicación "Pumarket", desarrollada con el fin de facilitar el contacto entre vendedores y compradores, usted acepta y se compromete a cumplir estos términos y condiciones. Si no está de acuerdo con alguno de los términos, debe abstenerse de utilizar la aplicación.\n\n'
-                    '2. Al registrarse, usted acepta que sus datos proporcionados, incluyendo su contacto de teléfono, cuenta de Instagram (si es proporcionada), serán visibles públicamente para todos los usuarios de la aplicación.\n\n'
-                    'Esta información es necesaria para facilitar la comunicación entre vendedores y compradores. No nos hacemos responsables del uso que otros usuarios puedan hacer de esta información fuera de la plataforma.\n\n'
-                    '3. Contenido Subido por el Usuario: Al subir contenido, como imágenes o descripciones de productos, usted declara ser el propietario legítimo de dicho contenido y que no infringe los derechos de terceros. Nos reservamos el derecho de eliminar cualquier contenido que consideremos inapropiado o que infrinja estos términos.\n\n'
-                    '4. Responsabilidad del Usuario: Usted es el único responsable de la información que comparte en la aplicación y de las interacciones que tenga con otros usuarios. No somos responsables de las negociaciones, transacciones o conflictos que puedan surgir entre usuarios.\n\n'
-                    '5. Terminación del Servicio: Nos reservamos el derecho de suspender o eliminar su cuenta si se detecta un uso indebido de la plataforma o si incumple estos términos.\n\n'
-                    '6. Spam: La subida de un mismo producto repetidas veces sera visto como spam y sera eliminado.\n\n',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                child: Text('No acepto'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 34, 174, 226),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                child: Text('Si acepto'),
-                onPressed: () {
-                  registerSeller();
-                },
-              ),
-            ],
-          );
-        },
+  void _validateEmail() async {
+    // Verificar si el formulario es válido
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      // Si la validación falla, mostrar un mensaje de error y retornar
+      Get.snackbar(
+        'Error',
+        'Por favor complete los campos correctamente',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
-    },
-  );
-}
+      return; // Salir de la función si los campos no son válidos
+    }
 
+    // Si los campos están bien, entonces proceder con las validaciones del correo y nombre
+    String email = _correoController.text.trim();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('sellers')
+        .where('email', isEqualTo: email)
+        .get();
 
-void _validateEmail() async {
-  // Verificar si el formulario es válido
-  if (!(_formKey.currentState?.validate() ?? false)) {
-    // Si la validación falla, mostrar un mensaje de error y retornar
-    Get.snackbar(
-      'Error',
-      'Por favor complete los campos correctamente',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-    return; // Salir de la función si los campos no son válidos
+    String name = _nombreController.text.trim();
+    QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
+        .collection('sellers')
+        .where('name', isEqualTo: name)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El correo ya existe, por favor ingrese otro.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (querySnapshot2.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('El nombre de usuario ya existe, por favor ingrese otro.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      // Si todo está bien, mostrar los términos y condiciones
+      _showTerms(context);
+    }
   }
-
-  // Si los campos están bien, entonces proceder con las validaciones del correo y nombre
-  String email = _correoController.text.trim();
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collection('sellers')
-      .where('email', isEqualTo: email)
-      .get();
-
-  String name = _nombreController.text.trim();
-  QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
-      .collection('sellers')
-      .where('name', isEqualTo: name)
-      .get();
-
-  if (querySnapshot.docs.isNotEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('El correo ya existe, por favor ingrese otro.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } else if (querySnapshot2.docs.isNotEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('El nombre de usuario ya existe, por favor ingrese otro.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } else {
-    // Si todo está bien, mostrar los términos y condiciones
-    _showTerms(context);
-  }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +437,7 @@ void _validateEmail() async {
                           controller: _instagramController,
                           validator: null, // No hay validación específica
                           teclado: TextInputType.url,
-                          hint: 'Ingrese el enlace de Instagram',
+                          hint: 'Ingrese su usuario de Instagram',
                           nombrelabel: 'Usuario de Instagram',
                           icono: FontAwesomeIcons.instagram,
                           show: false,
@@ -489,9 +489,12 @@ void _validateEmail() async {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton(
+                        CustomButton(
                           onPressed: _validateEmail,
-                          child: const Text('Registrar'),
+                          backgroundColor: Color.fromARGB(255, 33, 46, 127),
+                          textColor: Color.fromARGB(255, 255, 211, 0),
+                          icon: Icons.app_registration,
+                          label: 'Registrar',
                         ),
                         const SizedBox(height: 20),
                       ],

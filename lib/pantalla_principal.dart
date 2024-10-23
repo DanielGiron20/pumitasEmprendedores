@@ -776,7 +776,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         crossAxisCount: 2, // Número de columnas
         crossAxisSpacing: 10, // Espacio entre las columnas
         mainAxisSpacing: 10, // Espacio entre las filas
-        childAspectRatio: 1 / 1.5, // Ajusta la relación de aspecto (más alto)
+        childAspectRatio: 2 / 3, // Ajusta la relación de aspecto (más alto)
       ),
       itemCount: anunciosList.length,
       itemBuilder: (context, index) {
@@ -806,6 +806,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     // Título del anuncio
                     Text(
                       anuncio['titulo'] ?? 'Sin título',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -819,8 +821,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                       anuncio['descripcion']?.isNotEmpty == true
                           ? anuncio['descripcion']!
                           : '...',
-                      maxLines: 2, // Limitar a 2 líneas
-                      overflow: TextOverflow.ellipsis, // Mostrar "..." al final
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 14),
                     ),
                   ],

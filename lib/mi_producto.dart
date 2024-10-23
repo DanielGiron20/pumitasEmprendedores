@@ -163,7 +163,7 @@ class _MiProductoPageState extends State<MiProductoPage> {
       try {
         QuerySnapshot productQuery = await firestore
             .collection('products')
-            .doc('vs products')
+            .doc('vs')
             .collection('vs')
             .where('name', isEqualTo: widget.name)
             .where('description', isEqualTo: widget.description)
@@ -175,7 +175,7 @@ class _MiProductoPageState extends State<MiProductoPage> {
 
           await firestore
               .collection('products')
-              .doc('vs products')
+              .doc('vs')
               .collection('vs')
               .doc(productDocId)
               .delete();

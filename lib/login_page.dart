@@ -58,8 +58,8 @@ class _LoginPageState extends State<LoginPage> {
         if (user != null && user.emailVerified) {
         } else {
           // El correo aún no ha sido verificado
-          Get.snackbar(
-              'Error', 'Por favor, verifica tu correo antes de continuar',
+          Get.snackbar('Error',
+              'Por favor, confirma tu correo institucional antes de continuar para saber que te pertenece',
               backgroundColor: Colors.red, colorText: Colors.white);
           Navigator.of(context).pop();
           return;
