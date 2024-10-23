@@ -20,6 +20,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Usuario? _currentUser;
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _allProducts = [];
+  List<Map<String, dynamic>> anunciosList = [];
   final TextEditingController controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -45,7 +46,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   int _pageSize = 8; //Cantidad de productos por petición
   DocumentSnapshot? _lastDocument; //Ultimo documento cargado
 
-  bool _hasMoreProducts =true; //variable bandera para indicar si hay más productos que cargar
+  bool _hasMoreProducts =
+      true; //variable bandera para indicar si hay más productos que cargar
   bool _loadPerfil = false;
 
   @override
@@ -55,6 +57,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _scrollController.addListener(
         _scrollListener); // al cargar la app se carga el scrollListener
     _loadProducts(isInitialLoad: true); //y se arga la primera petición
+    _loadAdds();
   }
 
   Future<void> _checkUser() async {
@@ -114,6 +117,61 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _loadPerfil = true;
   }
 
+  Future<void> _loadAdds() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference addsCollection = firestore.collection('anuncios');
+
+      QuerySnapshot snapshot = await addsCollection.get();
+
+      // Limpiar la lista antes de cargar nuevos anuncios
+      anunciosList.clear();
+
+      // Recopilar los datos en una lista
+      List<Map<String, dynamic>> tempList = [];
+
+      // Recorrer los documentos obtenidos y agregarlos a la lista
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+
+        // Verificar que los campos existan en el documento
+        String descripcion = data['descripcion'] ?? '';
+        String image = data['image'] ?? '';
+        String titulo = data['titulo'] ?? '';
+
+        // Agregar a la lista temporal
+        tempList.add({
+          'descripcion': descripcion,
+          'image': image,
+          'titulo': titulo,
+        });
+      }
+
+      // Actualizar la lista y notificar a los widgets que se reconstruyan
+      setState(() {
+        anunciosList.addAll(tempList);
+      });
+    } catch (e) {
+      if (e is FirebaseException) {
+        // Manejo de errores de Firestore
+        Get.snackbar(
+          'Error de Firestore',
+          e.message ?? 'Error desconocido',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      } else {
+        // Manejo de errores genéricos
+        Get.snackbar(
+          'Error',
+          e.toString(),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+  }
+
   Future<void> _loadProducts({bool isInitialLoad = false}) async {
     //funcion para cargar los productos
     try {
@@ -122,7 +180,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       CollectionReference productsCollection =
-          firestore.collection('products').doc('vs products').collection('vs');
+          firestore.collection('products').doc('vs').collection('vs');
       // Referencia a la colección de productos
 
       Query query = productsCollection
@@ -199,10 +257,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       } else {
         final searchLower = query.toLowerCase().split(' ');
         FirebaseFirestore firestore = FirebaseFirestore.instance;
-        CollectionReference productsCollection = firestore
-            .collection('products')
-            .doc('vs products')
-            .collection('vs');
+        CollectionReference productsCollection =
+            firestore.collection('products').doc('vs').collection('vs');
 
         Query querySnapshot = productsCollection
             .where('keywords', arrayContainsAny: searchLower)
@@ -603,6 +659,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               SliverList(
                 delegate: SliverChildListDelegate(
                   [
+                    buildAdds(),
                     _buildEmptyState(),
                     _buildProductGrid(),
                   ],
@@ -702,6 +759,77 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           );
         },
       ),
+    );
+  }
+
+  Widget buildAdds() {
+    // Si la lista de anuncios está vacía, devolver un Container vacío
+    if (anunciosList.isEmpty) {
+      return Container(); // O puedes devolver un Widget que indique que no hay anuncios
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics:
+          const NeverScrollableScrollPhysics(), // Evita el scroll dentro del GridView
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // Número de columnas
+        crossAxisSpacing: 10, // Espacio entre las columnas
+        mainAxisSpacing: 10, // Espacio entre las filas
+        childAspectRatio: 1 / 1.5, // Ajusta la relación de aspecto (más alto)
+      ),
+      itemCount: anunciosList.length,
+      itemBuilder: (context, index) {
+        var anuncio = anunciosList[index];
+        return Card(
+          margin: EdgeInsets.all(5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Mostrar la imagen del anuncio expandida al máximo
+              if (anuncio['image'] != null && anuncio['image'].isNotEmpty)
+                Container(
+                  height:
+                      150, // Ajusta esta altura para hacer la imagen más larga
+                  width: double.infinity, // Expandir a todo el ancho disponible
+                  child: Image.network(
+                    anuncio['image'],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Título del anuncio
+                    Text(
+                      anuncio['titulo'] ?? 'Sin título',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    SizedBox(height: 5),
+
+                    // Descripción del anuncio, mostrando "..." si es muy larga
+                    Text(
+                      anuncio['descripcion']?.isNotEmpty == true
+                          ? anuncio['descripcion']!
+                          : '...',
+                      maxLines: 2, // Limitar a 2 líneas
+                      overflow: TextOverflow.ellipsis, // Mostrar "..." al final
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

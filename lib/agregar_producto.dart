@@ -132,7 +132,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
 
         await FirebaseFirestore.instance
             .collection('products')
-            .doc('vs products')
+            .doc('vs')
             .collection('vs')
             .add({
           'name': _nombreController.text,

@@ -186,7 +186,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
           QuerySnapshot productQuery = await firestore
               .collection('products')
-              .doc('vs products')
+              .doc('vs')
               .collection('vs')
               .where('name', isEqualTo: widget.name)
               .where('description', isEqualTo: widget.description)
@@ -199,7 +199,7 @@ class _EditarProductosPageState extends State<EditarProductosPage> {
 
             await firestore
                 .collection('products')
-                .doc('vs products')
+                .doc('vs')
                 .collection('vs')
                 .doc(documentId)
                 .update({

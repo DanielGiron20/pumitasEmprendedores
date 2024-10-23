@@ -47,7 +47,7 @@ class _MisProductosState extends State<MisProductos> {
   Future<void> _loadProducts() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference productsCollection =
-        firestore.collection('products').doc('vs products').collection('vs');
+        firestore.collection('products').doc('vs').collection('vs');
 
     QuerySnapshot snapshot = await productsCollection
         .where('sellerId', isEqualTo: _currentUser!.id)

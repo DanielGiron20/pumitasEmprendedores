@@ -11,7 +11,7 @@ class ProductDetailPage extends StatelessWidget {
     try {
       return await FirebaseFirestore.instance
           .collection('products')
-          .doc('vs products')
+          .doc('vs')
           .collection('vs')
           .doc(productId)
           .get();
