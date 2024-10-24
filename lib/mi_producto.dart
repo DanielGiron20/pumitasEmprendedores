@@ -144,10 +144,24 @@ class _MiProductoPageState extends State<MiProductoPage> {
               const Text('¿Estás seguro que deseas eliminar este producto?'),
           actions: [
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),

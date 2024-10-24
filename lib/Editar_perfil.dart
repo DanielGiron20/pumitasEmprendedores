@@ -87,10 +87,24 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
               '¿Estás seguro de cambiar la contraseña?,Te enviaremos un correo a tu correo electronico'),
           actions: <Widget>[
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               child: const Text('No'),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               child: const Text('Sí'),
               onPressed: () => Navigator.of(context).pop(true),
             ),
@@ -194,10 +208,24 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
               '¿Estás seguro que deseas guardar estos cambios en tu perfil?'),
           actions: [
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sí'),
             ),

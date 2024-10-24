@@ -322,7 +322,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference productsCollection =
-        firestore.collection('products').doc('vs products').collection('vs');
+        firestore.collection('products').doc('vs').collection('vs');
 
     Query query = productsCollection
         .where('category', isEqualTo: category)

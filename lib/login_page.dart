@@ -168,10 +168,24 @@ class _LoginPageState extends State<LoginPage> {
           ),
           actions: <Widget>[
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               child: const Text('Cancelar'),
               onPressed: () => Navigator.of(context).pop(null), // Cancelar
             ),
             TextButton(
+               style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               child: const Text('Enviar'),
               onPressed: () => Navigator.of(context)
                   .pop(emailInput), // Enviar el correo ingresado

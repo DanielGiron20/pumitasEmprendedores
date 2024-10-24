@@ -148,7 +148,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
           'images': [imageUrl],
         });
 
-        Get.snackbar('Éxito', 'Producto registrado exitosamente');
+        Get.snackbar('Éxito', 'Producto registrado exitosamente', backgroundColor: Colors.green, colorText: Colors.white);
 
         _formKey.currentState?.reset();
         setState(() {
@@ -167,7 +167,7 @@ class _AgregarProductoState extends State<AgregarProducto> {
         print("Error: $e");
       }
     } else {
-      Get.snackbar('Error', 'Por favor complete los campos correctamente');
+      Get.snackbar('Error', 'Por favor complete los campos correctamente', backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
